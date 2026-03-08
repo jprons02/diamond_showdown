@@ -1,0 +1,129 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { usePathname } from "next/navigation";
+import {
+  Navbar as HeroNavbar,
+  NavbarBrand,
+  NavbarContent,
+  NavbarItem,
+  NavbarMenuToggle,
+  NavbarMenu,
+  NavbarMenuItem,
+  Button,
+} from "@heroui/react";
+import { brand } from "@/lib/brand";
+
+const navItems = [
+  { label: "Home", href: "/" },
+  { label: "About", href: "/about" },
+  { label: "Rules", href: "/rules" },
+  { label: "Contact", href: "/contact" },
+];
+
+export default function Navbar() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const pathname = usePathname();
+
+  return (
+    <HeroNavbar
+      isMenuOpen={isMenuOpen}
+      onMenuOpenChange={setIsMenuOpen}
+      maxWidth="xl"
+      className="bg-brand-dark/80 backdrop-blur-xl border-b border-white/5"
+      height="4.5rem"
+    >
+      {/* Mobile menu toggle */}
+      <NavbarContent className="sm:hidden" justify="start">
+        <NavbarMenuToggle
+          aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+          className="text-white"
+        />
+      </NavbarContent>
+
+      {/* Brand */}
+      <NavbarContent className="pr-3 sm:pr-0" justify="center">
+        <NavbarBrand as={Link} href="/" className="gap-3 cursor-pointer">
+          <Image
+            src="/logo.png"
+            alt={`${brand.name} Logo`}
+            width={44}
+            height={44}
+            className="rounded-lg"
+            priority
+          />
+          <span className="font-bold text-lg text-white hidden sm:block">
+            {brand.name}
+          </span>
+        </NavbarBrand>
+      </NavbarContent>
+
+      {/* Desktop nav */}
+      <NavbarContent className="hidden sm:flex gap-6" justify="center">
+        {navItems.map((item) => (
+          <NavbarItem key={item.href} isActive={pathname === item.href}>
+            <Link
+              href={item.href}
+              className={`text-sm font-medium transition-colors ${
+                pathname === item.href
+                  ? "text-brand-teal"
+                  : "text-gray-300 hover:text-white"
+              }`}
+            >
+              {item.label}
+            </Link>
+          </NavbarItem>
+        ))}
+      </NavbarContent>
+
+      {/* CTA */}
+      <NavbarContent justify="end">
+        <NavbarItem>
+          <Button
+            as={Link}
+            href="/register"
+            color="primary"
+            variant="shadow"
+            size="sm"
+            className="font-semibold bg-gradient-brand text-white"
+          >
+            Register Now
+          </Button>
+        </NavbarItem>
+      </NavbarContent>
+
+      {/* Mobile menu */}
+      <NavbarMenu className="bg-brand-dark/95 backdrop-blur-xl pt-6">
+        {navItems.map((item) => (
+          <NavbarMenuItem key={item.href}>
+            <Link
+              href={item.href}
+              onClick={() => setIsMenuOpen(false)}
+              className={`block w-full py-3 text-lg font-medium transition-colors ${
+                pathname === item.href
+                  ? "text-brand-teal"
+                  : "text-gray-300 hover:text-white"
+              }`}
+            >
+              {item.label}
+            </Link>
+          </NavbarMenuItem>
+        ))}
+        <NavbarMenuItem>
+          <Button
+            as={Link}
+            href="/register"
+            onClick={() => setIsMenuOpen(false)}
+            color="primary"
+            variant="shadow"
+            className="w-full mt-4 font-semibold bg-gradient-brand text-white"
+          >
+            Register Now
+          </Button>
+        </NavbarMenuItem>
+      </NavbarMenu>
+    </HeroNavbar>
+  );
+}
