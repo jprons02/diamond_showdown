@@ -139,48 +139,6 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
-
-      {/* Tournament Details */}
-      <section className="py-16 sm:py-24 border-t border-white/5 bg-gradient-dark">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              Tournament at a Glance
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {[
-              { label: "Date", value: brand.tournament.date },
-              { label: "Location", value: brand.tournament.location },
-              { label: "Format", value: brand.tournament.format },
-              { label: "Max Teams", value: String(brand.tournament.maxTeams) },
-              {
-                label: "Players Per Team",
-                value: brand.tournament.playersPerTeam,
-              },
-              { label: "Team Entry Fee", value: brand.tournament.teamFee },
-              { label: "Free Agent Fee", value: brand.tournament.freeAgentFee },
-            ].map((item) => (
-              <div
-                key={item.label}
-                className="flex items-center justify-between p-5 rounded-xl bg-brand-surface/50 border border-white/5"
-              >
-                <span className="text-gray-400 text-sm">{item.label}</span>
-                <span className="text-white font-semibold">{item.value}</span>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-12 text-center">
-            <Link
-              href="/register"
-              className="inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-white bg-gradient-brand rounded-xl shadow-lg shadow-brand-teal/25 hover:shadow-brand-teal/40 hover:scale-105 transition-all duration-300"
-            >
-              Register Now
-            </Link>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }

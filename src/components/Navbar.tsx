@@ -36,7 +36,7 @@ export default function Navbar() {
       height="4.5rem"
     >
       {/* Mobile menu toggle */}
-      <NavbarContent className="sm:hidden" justify="start">
+      <NavbarContent className="md:hidden" justify="start">
         <NavbarMenuToggle
           aria-label={isMenuOpen ? "Close menu" : "Open menu"}
           className="text-white"
@@ -44,24 +44,26 @@ export default function Navbar() {
       </NavbarContent>
 
       {/* Brand */}
-      <NavbarContent className="pr-3 sm:pr-0" justify="start">
+      <NavbarContent className="hidden md:flex" justify="start">
         <NavbarBrand as={Link} href="/" className="gap-3 cursor-pointer">
           <Image
             src="/logo.png"
             alt={`${brand.name} Logo`}
-            width={44}
-            height={44}
+            width={75}
+            height={75}
             className="rounded-lg"
             priority
           />
-          <span className="font-bold text-lg text-white hidden sm:block">
+          {/*
+          <span className="font-bold text-lg text-white hidden md:block">
             {brand.name}
           </span>
+          */}
         </NavbarBrand>
       </NavbarContent>
 
       {/* Desktop nav */}
-      <NavbarContent className="hidden sm:flex gap-6" justify="center">
+      <NavbarContent className="hidden md:flex gap-6" justify="center">
         {navItems.map((item) => (
           <NavbarItem key={item.href} isActive={pathname === item.href}>
             <Link
@@ -79,7 +81,19 @@ export default function Navbar() {
       </NavbarContent>
 
       {/* CTA */}
-      <NavbarContent justify="end">
+      <NavbarContent justify="end" className="gap-5">
+        {/* Mobile: logo sits next to the button */}
+        <NavbarItem className="flex md:hidden">
+          <Link href="/">
+            <Image
+              src="/logo.png"
+              alt={`${brand.name} Logo`}
+              width={36}
+              height={36}
+              className="rounded-lg"
+            />
+          </Link>
+        </NavbarItem>
         <NavbarItem>
           <Button
             as={Link}
