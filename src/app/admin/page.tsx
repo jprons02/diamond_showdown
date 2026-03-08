@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { LockClosedIcon, WrenchScrewdriverIcon } from "@heroicons/react/24/outline";
+import {
+  LockClosedIcon,
+  WrenchScrewdriverIcon,
+} from "@heroicons/react/24/outline";
 
 export const metadata: Metadata = {
   title: "Admin",
@@ -31,8 +34,8 @@ export default function AdminPage() {
           Admin Dashboard
         </h1>
         <p className="text-gray-400 leading-relaxed mb-8">
-          The admin dashboard is currently under development. Soon you&apos;ll be
-          able to manage teams, brackets, schedules, and more — all from one
+          The admin dashboard is currently under development. Soon you&apos;ll
+          be able to manage teams, brackets, schedules, and more — all from one
           place.
         </p>
 

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { brand } from "@/lib/brand";
+import HeroBackground from "@/components/HeroBackground";
+import FloatingDiamonds from "@/components/FloatingDiamonds";
 import {
   HeartIcon,
   SparklesIcon,
@@ -37,31 +39,33 @@ const values = [
 
 export default function AboutPage() {
   return (
-    <div className="bg-gradient-dark">
+    <div>
       {/* Hero */}
-      <section className="relative overflow-hidden py-20 sm:py-28">
-        <div className="absolute inset-0">
-          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-teal/5 rounded-full blur-3xl" />
-        </div>
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-brand-teal font-semibold text-sm uppercase tracking-widest mb-4">
+      <HeroBackground
+        imageSrc="https://images.unsplash.com/photo-1552667466-07770ae110d0?w=1920&q=80"
+        imageAlt="Softball team celebrating on field"
+        overlayOpacity="bg-black/60"
+      >
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-36 text-center">
+          <p className="text-brand-teal font-semibold text-sm uppercase tracking-widest mb-4 animate-slide-up">
             About Us
           </p>
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-white mb-6 tracking-tight">
+          <h1 className="text-4xl sm:text-6xl font-extrabold text-white mb-6 tracking-tight animate-slide-up-delay">
             The Story Behind the
-            <span className="text-gradient"> Showdown</span>
+            <span className="text-gradient-animated"> Showdown</span>
           </h1>
-          <p className="text-lg text-gray-400 leading-relaxed max-w-2xl mx-auto">
+          <p className="text-lg text-gray-200 leading-relaxed max-w-2xl mx-auto animate-slide-up-delay-2">
             Diamond Showdown was born from a simple idea: bring together the
             best softball talent for a weekend of fierce competition, great
             energy, and unforgettable memories.
           </p>
         </div>
-      </section>
+      </HeroBackground>
 
       {/* Mission Section */}
-      <section className="py-16 sm:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="relative py-16 sm:py-24 bg-gradient-dark overflow-hidden">
+        <FloatingDiamonds />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               <div className="relative">
@@ -105,7 +109,7 @@ export default function AboutPage() {
       </section>
 
       {/* Values */}
-      <section className="py-16 sm:py-24 border-t border-white/5">
+      <section className="py-16 sm:py-24 border-t border-white/5 bg-brand-dark">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <p className="text-brand-teal font-semibold text-sm uppercase tracking-widest mb-3">
@@ -137,7 +141,7 @@ export default function AboutPage() {
       </section>
 
       {/* Tournament Details */}
-      <section className="py-16 sm:py-24 border-t border-white/5">
+      <section className="py-16 sm:py-24 border-t border-white/5 bg-gradient-dark">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-white mb-4">

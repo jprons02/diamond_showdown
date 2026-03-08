@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { brand } from "@/lib/brand";
+import HeroBackground from "@/components/HeroBackground";
 import {
   ClockIcon,
   ExclamationTriangleIcon,
@@ -78,30 +79,31 @@ const sections = [
 
 export default function RulesPage() {
   return (
-    <div className="bg-gradient-dark">
+    <div>
       {/* Hero */}
-      <section className="relative overflow-hidden py-20 sm:py-28">
-        <div className="absolute inset-0">
-          <div className="absolute top-0 left-0 w-[400px] h-[400px] bg-brand-teal/5 rounded-full blur-3xl" />
-        </div>
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-brand-teal font-semibold text-sm uppercase tracking-widest mb-4">
+      <HeroBackground
+        imageSrc="https://images.unsplash.com/photo-1581092921461-eab10380ed15?w=1920&q=80"
+        imageAlt="Softball field chalk lines"
+        overlayOpacity="bg-black/65"
+      >
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-36 text-center">
+          <p className="text-brand-teal font-semibold text-sm uppercase tracking-widest mb-4 animate-slide-up">
             Official Rules
           </p>
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-white mb-6 tracking-tight">
+          <h1 className="text-4xl sm:text-6xl font-extrabold text-white mb-6 tracking-tight animate-slide-up-delay">
             Tournament Rules &
-            <span className="text-gradient"> Regulations</span>
+            <span className="text-gradient-animated"> Regulations</span>
           </h1>
-          <p className="text-lg text-gray-400 leading-relaxed max-w-2xl mx-auto">
+          <p className="text-lg text-gray-200 leading-relaxed max-w-2xl mx-auto animate-slide-up-delay-2">
             Please review all rules before registering. By participating in
             Diamond Showdown, all players and teams agree to abide by these
             rules.
           </p>
         </div>
-      </section>
+      </HeroBackground>
 
       {/* Quick Info */}
-      <section className="border-y border-white/5 bg-brand-surface/50">
+      <section className="border-y border-white/5 bg-brand-dark">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             <div className="flex items-center gap-3">
@@ -136,7 +138,7 @@ export default function RulesPage() {
       </section>
 
       {/* Rules Sections */}
-      <section className="py-16 sm:py-24">
+      <section className="py-16 sm:py-24 bg-gradient-dark">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="space-y-10">
             {sections.map((section, idx) => (

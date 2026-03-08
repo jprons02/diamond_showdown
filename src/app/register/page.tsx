@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { brand } from "@/lib/brand";
+import HeroBackground from "@/components/HeroBackground";
 import {
   UserGroupIcon,
   UserIcon,
@@ -104,8 +105,8 @@ export default function RegisterPage() {
           </h1>
           <p className="text-gray-400 mb-8">
             Thank you for registering for {brand.name}! We&apos;ll review your
-            submission and reach out via email with next steps, including payment
-            details.
+            submission and reach out via email with next steps, including
+            payment details.
           </p>
           <button
             onClick={() => {
@@ -139,29 +140,30 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="bg-gradient-dark">
+    <div>
       {/* Hero */}
-      <section className="relative overflow-hidden py-20 sm:py-28">
-        <div className="absolute inset-0">
-          <div className="absolute top-1/3 left-1/4 w-[500px] h-[500px] bg-brand-teal/5 rounded-full blur-3xl" />
-        </div>
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-brand-teal font-semibold text-sm uppercase tracking-widest mb-4">
+      <HeroBackground
+        imageSrc="https://images.unsplash.com/photo-1587280501635-68a0e82cd5ff?w=1920&q=80"
+        imageAlt="Softball players on the field"
+        overlayOpacity="bg-black/60"
+      >
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-36 text-center">
+          <p className="text-brand-teal font-semibold text-sm uppercase tracking-widest mb-4 animate-slide-up">
             Sign Up
           </p>
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-white mb-6 tracking-tight">
+          <h1 className="text-4xl sm:text-6xl font-extrabold text-white mb-6 tracking-tight animate-slide-up-delay">
             Register for
-            <span className="text-gradient"> {brand.name}</span>
+            <span className="text-gradient-animated"> {brand.name}</span>
           </h1>
-          <p className="text-lg text-gray-400 leading-relaxed max-w-2xl mx-auto">
+          <p className="text-lg text-gray-200 leading-relaxed max-w-2xl mx-auto animate-slide-up-delay-2">
             Register your full team or sign up as a free agent. Space is limited
             to {brand.tournament.maxTeams} teams — don&apos;t miss out!
           </p>
         </div>
-      </section>
+      </HeroBackground>
 
       {/* Registration Type Toggle */}
-      <section className="pb-16 sm:pb-24">
+      <section className="pb-16 sm:pb-24 bg-gradient-dark">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Toggle */}
           <div className="flex rounded-2xl bg-brand-surface/50 border border-white/5 p-1.5 mb-10">
@@ -275,7 +277,11 @@ export default function RegisterPage() {
                       Select...
                     </option>
                     {Array.from({ length: 4 }, (_, i) => i + 12).map((n) => (
-                      <option key={n} value={String(n)} className="bg-brand-dark">
+                      <option
+                        key={n}
+                        value={String(n)}
+                        className="bg-brand-dark"
+                      >
                         {n} players
                       </option>
                     ))}
@@ -461,7 +467,11 @@ export default function RegisterPage() {
                       Select level...
                     </option>
                     {experienceLevels.map((level) => (
-                      <option key={level} value={level} className="bg-brand-dark">
+                      <option
+                        key={level}
+                        value={level}
+                        className="bg-brand-dark"
+                      >
                         {level}
                       </option>
                     ))}

@@ -125,13 +125,17 @@ export default function BrandPage() {
                 className="rounded-xl"
               />
               <div className="text-center">
-                <p className="text-sm font-medium text-white">On Dark Background</p>
+                <p className="text-sm font-medium text-white">
+                  On Dark Background
+                </p>
                 <p className="text-xs text-gray-500">Primary usage</p>
               </div>
             </div>
             {/* Logo guidelines */}
             <div className="p-8 rounded-2xl bg-brand-surface/50 border border-white/5 space-y-6">
-              <h3 className="text-lg font-semibold text-white">Logo Guidelines</h3>
+              <h3 className="text-lg font-semibold text-white">
+                Logo Guidelines
+              </h3>
               <ul className="space-y-3">
                 {[
                   "Always use the official logo files — never recreate or alter the logo.",
@@ -140,7 +144,10 @@ export default function BrandPage() {
                   "Do not place the logo on busy or low-contrast backgrounds.",
                   "Minimum display size: 40px height for digital, 0.5in for print.",
                 ].map((rule, i) => (
-                  <li key={i} className="flex items-start gap-3 text-sm text-gray-400">
+                  <li
+                    key={i}
+                    className="flex items-start gap-3 text-sm text-gray-400"
+                  >
                     <span className="w-1.5 h-1.5 rounded-full bg-brand-teal mt-1.5 flex-shrink-0" />
                     {rule}
                   </li>
@@ -168,7 +175,9 @@ export default function BrandPage() {
                   style={{ backgroundColor: color.hex }}
                 />
                 <div className="p-4">
-                  <p className="font-semibold text-white text-sm">{color.name}</p>
+                  <p className="font-semibold text-white text-sm">
+                    {color.name}
+                  </p>
                   <p className="text-xs font-mono text-gray-400 mt-1">
                     {color.hex}
                   </p>
@@ -201,7 +210,9 @@ export default function BrandPage() {
                   )}
                 </div>
                 <div className="p-4">
-                  <p className="font-semibold text-white text-sm">{grad.name}</p>
+                  <p className="font-semibold text-white text-sm">
+                    {grad.name}
+                  </p>
                   <p className="text-xs font-mono text-gray-500 mt-1 break-all">
                     {grad.css}
                   </p>
@@ -226,7 +237,9 @@ export default function BrandPage() {
                   <p className="text-xs text-gray-500 uppercase tracking-wider mb-3">
                     Primary Font
                   </p>
-                  <p className="text-3xl font-bold text-white">{brand.fonts.heading}</p>
+                  <p className="text-3xl font-bold text-white">
+                    {brand.fonts.heading}
+                  </p>
                   <p className="text-sm text-gray-400 mt-2">
                     Used for headings, buttons, navigation, and body text.
                   </p>
@@ -247,7 +260,8 @@ export default function BrandPage() {
                         key={item.weight}
                         className={`text-xl text-white ${item.className}`}
                       >
-                        {item.weight} — The quick brown fox jumps over the lazy dog
+                        {item.weight} — The quick brown fox jumps over the lazy
+                        dog
                       </p>
                     ))}
                   </div>
@@ -324,10 +338,14 @@ export default function BrandPage() {
                 </div>
                 <div className="p-6 rounded-2xl bg-brand-surface border border-white/5 glow-teal">
                   <p className="text-sm font-medium text-white">Glow Card</p>
-                  <p className="text-xs text-gray-500 mt-1">+ glow-teal shadow</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    + glow-teal shadow
+                  </p>
                 </div>
                 <div className="p-6 rounded-2xl bg-brand-surface/50 border border-brand-teal/30">
-                  <p className="text-sm font-medium text-white">Accent Border</p>
+                  <p className="text-sm font-medium text-white">
+                    Accent Border
+                  </p>
                   <p className="text-xs text-gray-500 mt-1">
                     border-brand-teal/30
                   </p>
@@ -367,13 +385,31 @@ export default function BrandPage() {
           />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="p-6 rounded-2xl bg-brand-surface/50 border border-white/5">
-              <p className="text-sm font-semibold text-white mb-4">Border Radii</p>
+              <p className="text-sm font-semibold text-white mb-4">
+                Border Radii
+              </p>
               <div className="space-y-3">
                 {[
-                  { label: "xl (12px)", className: "rounded-xl", size: "w-16 h-16" },
-                  { label: "2xl (16px)", className: "rounded-2xl", size: "w-16 h-16" },
-                  { label: "3xl (24px)", className: "rounded-3xl", size: "w-16 h-16" },
-                  { label: "full", className: "rounded-full", size: "w-16 h-16" },
+                  {
+                    label: "xl (12px)",
+                    className: "rounded-xl",
+                    size: "w-16 h-16",
+                  },
+                  {
+                    label: "2xl (16px)",
+                    className: "rounded-2xl",
+                    size: "w-16 h-16",
+                  },
+                  {
+                    label: "3xl (24px)",
+                    className: "rounded-3xl",
+                    size: "w-16 h-16",
+                  },
+                  {
+                    label: "full",
+                    className: "rounded-full",
+                    size: "w-16 h-16",
+                  },
                 ].map((item) => (
                   <div key={item.label} className="flex items-center gap-4">
                     <div

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Metadata } from "next";
 import { brand } from "@/lib/brand";
+import HeroBackground from "@/components/HeroBackground";
 import {
   EnvelopeIcon,
   MapPinIcon,
@@ -48,29 +49,30 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="bg-gradient-dark">
+    <div>
       {/* Hero */}
-      <section className="relative overflow-hidden py-20 sm:py-28">
-        <div className="absolute inset-0">
-          <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-brand-teal/5 rounded-full blur-3xl" />
-        </div>
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-brand-teal font-semibold text-sm uppercase tracking-widest mb-4">
+      <HeroBackground
+        imageSrc="https://images.unsplash.com/photo-1541746972996-4e0b0f43e02a?w=1920&q=80"
+        imageAlt="Empty baseball field at dusk"
+        overlayOpacity="bg-black/65"
+      >
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-36 text-center">
+          <p className="text-brand-teal font-semibold text-sm uppercase tracking-widest mb-4 animate-slide-up">
             Get in Touch
           </p>
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-white mb-6 tracking-tight">
+          <h1 className="text-4xl sm:text-6xl font-extrabold text-white mb-6 tracking-tight animate-slide-up-delay">
             Contact
-            <span className="text-gradient"> Us</span>
+            <span className="text-gradient-animated"> Us</span>
           </h1>
-          <p className="text-lg text-gray-400 leading-relaxed max-w-2xl mx-auto">
+          <p className="text-lg text-gray-200 leading-relaxed max-w-2xl mx-auto animate-slide-up-delay-2">
             Have questions about Diamond Showdown? We&apos;re here to help. Send
             us a message and we&apos;ll get back to you as soon as possible.
           </p>
         </div>
-      </section>
+      </HeroBackground>
 
       {/* Contact Content */}
-      <section className="py-16 sm:py-24">
+      <section className="py-16 sm:py-24 bg-gradient-dark">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-12">
             {/* Info Cards */}
