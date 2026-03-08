@@ -143,8 +143,8 @@ export default function RegisterPage() {
     <div>
       {/* Hero */}
       <HeroBackground
-        imageSrc="https://images.unsplash.com/photo-1587280501635-68a0e82cd5ff?w=1920&q=80"
-        imageAlt="Softball players on the field"
+        imageSrc="/Register.jpg"
+        imageAlt="Softball player on the field"
         overlayOpacity="bg-black/60"
       >
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-36 text-center">

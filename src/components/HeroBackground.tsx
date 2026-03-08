@@ -4,6 +4,7 @@ interface HeroBackgroundProps {
   imageSrc: string;
   imageAlt: string;
   overlayOpacity?: string;
+  imagePosition?: string;
   children: React.ReactNode;
 }
 
@@ -15,6 +16,7 @@ export default function HeroBackground({
   imageSrc,
   imageAlt,
   overlayOpacity = "bg-black/60",
+  imagePosition = "object-center",
   children,
 }: HeroBackgroundProps) {
   return (
@@ -25,7 +27,7 @@ export default function HeroBackground({
           src={imageSrc}
           alt={imageAlt}
           fill
-          className="object-cover object-center"
+          className={`object-cover ${imagePosition}`}
           priority
           sizes="100vw"
         />

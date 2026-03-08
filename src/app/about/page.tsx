@@ -18,6 +18,12 @@ export const metadata: Metadata = {
 
 const values = [
   {
+    icon: HeartIcon,
+    title: "Sportsmanship",
+    description:
+      "Respect for opponents, officials, and the game itself is at the heart of everything we do.",
+  },
+  {
     icon: SparklesIcon,
     title: "Competition",
     description:
@@ -29,12 +35,6 @@ const values = [
     description:
       "More than a tournament — it's a gathering of athletes, families, and fans who share a love for the game.",
   },
-  {
-    icon: HeartIcon,
-    title: "Sportsmanship",
-    description:
-      "Respect for opponents, officials, and the game itself is at the heart of everything we do.",
-  },
 ];
 
 export default function AboutPage() {
@@ -42,8 +42,8 @@ export default function AboutPage() {
     <div>
       {/* Hero */}
       <HeroBackground
-        imageSrc="https://images.unsplash.com/photo-1552667466-07770ae110d0?w=1920&q=80"
-        imageAlt="Softball team celebrating on field"
+        imageSrc="/About.jpg"
+        imageAlt="Closeup of batting gloves"
         overlayOpacity="bg-black/60"
       >
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-36 text-center">

@@ -52,8 +52,8 @@ export default function ContactPage() {
     <div>
       {/* Hero */}
       <HeroBackground
-        imageSrc="https://images.unsplash.com/photo-1541746972996-4e0b0f43e02a?w=1920&q=80"
-        imageAlt="Empty baseball field at dusk"
+        imageSrc="/Contact.jpg"
+        imageAlt="Closeup of 2nd base"
         overlayOpacity="bg-black/65"
       >
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-36 text-center">

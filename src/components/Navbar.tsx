@@ -44,7 +44,7 @@ export default function Navbar() {
       </NavbarContent>
 
       {/* Brand */}
-      <NavbarContent className="pr-3 sm:pr-0" justify="center">
+      <NavbarContent className="pr-3 sm:pr-0" justify="start">
         <NavbarBrand as={Link} href="/" className="gap-3 cursor-pointer">
           <Image
             src="/logo.png"

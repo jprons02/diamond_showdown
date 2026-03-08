@@ -23,8 +23,8 @@ export const brand = {
   },
 
   social: {
-    facebook: "https://facebook.com/diamondshowdown",
-    instagram: "https://instagram.com/diamondshowdown",
+    facebook: "https://www.facebook.com/profile.php?id=61575130084541",
+    instagram: "https://www.instagram.com/diamond_showdown1",
     twitter: "https://twitter.com/diamondshowdown",
     email: "info@diamondshowdown.com",
   },

@@ -46,8 +46,8 @@ export default function HomePage() {
     <div>
       {/* Hero Section with baseball field background */}
       <HeroBackground
-        imageSrc="https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=1920&q=80"
-        imageAlt="Softball diamond at sunset"
+        imageSrc="/hero.jpg"
+        imageAlt="Softball diamond champs"
         overlayOpacity="bg-black/55"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-32 sm:pt-36 sm:pb-44">
@@ -200,19 +200,19 @@ export default function HomePage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             {[
               {
-                src: "https://images.unsplash.com/photo-1531396927823-5d5fb1ea5384?w=600&q=80",
+                src: "/image1.jpg",
                 alt: "Softball batter at the plate",
               },
               {
-                src: "https://images.unsplash.com/photo-1578432156115-4ea717a0c998?w=600&q=80",
+                src: "/image2.jpg",
                 alt: "Baseball field under lights",
               },
               {
-                src: "https://images.unsplash.com/photo-1529768167801-9173d94c2a42?w=600&q=80",
+                src: "/image3.jpg",
                 alt: "Team celebrating in dugout",
               },
               {
-                src: "https://images.unsplash.com/photo-1617633784081-5bcac4c24985?w=600&q=80",
+                src: "/image4.jpg",
                 alt: "Softball glove and ball on field",
               },
             ].map((photo, idx) => (
@@ -224,11 +224,11 @@ export default function HomePage() {
                   src={photo.src}
                   alt={photo.alt}
                   fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-110"
+                  className="object-cover transition-transform duration-700"
                   sizes="(max-width: 768px) 50vw, 25vw"
                 />
-                <div className="absolute inset-0 bg-brand-teal/0 group-hover:bg-brand-teal/10 transition-colors duration-500" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="absolute inset-0 bg-brand-teal/0 transition-colors duration-500" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 transition-opacity duration-500" />
               </div>
             ))}
           </div>

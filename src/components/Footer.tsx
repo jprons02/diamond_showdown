@@ -41,25 +41,6 @@ function XTwitterIcon({ className }: { className?: string }) {
   );
 }
 
-function EnvelopeIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      fill="none"
-      viewBox="0 0 24 24"
-      strokeWidth={1.5}
-      stroke="currentColor"
-      aria-hidden="true"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"
-      />
-    </svg>
-  );
-}
-
 const footerNav = {
   tournament: [
     { label: "About", href: "/about" },
@@ -77,7 +58,6 @@ const socialLinks = [
   { label: "Facebook", href: brand.social.facebook, icon: FacebookIcon },
   { label: "Instagram", href: brand.social.instagram, icon: InstagramIcon },
   { label: "X / Twitter", href: brand.social.twitter, icon: XTwitterIcon },
-  { label: "Email", href: `mailto:${brand.social.email}`, icon: EnvelopeIcon },
 ];
 
 export default function Footer() {
@@ -158,24 +138,10 @@ export default function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-12 pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="mt-12 pt-8 border-t border-white/5 gap-4">
           <p className="text-xs text-gray-500">
             &copy; {brand.year} {brand.name}. All rights reserved.
           </p>
-          <div className="flex items-center gap-4">
-            {socialLinks.map((social) => (
-              <a
-                key={social.label}
-                href={social.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-500 hover:text-brand-teal transition-colors"
-                aria-label={social.label}
-              >
-                <social.icon className="w-4 h-4" />
-              </a>
-            ))}
-          </div>
         </div>
       </div>
     </footer>

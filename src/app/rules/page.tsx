@@ -82,9 +82,10 @@ export default function RulesPage() {
     <div>
       {/* Hero */}
       <HeroBackground
-        imageSrc="https://images.unsplash.com/photo-1581092921461-eab10380ed15?w=1920&q=80"
-        imageAlt="Softball field chalk lines"
+        imageSrc="/Rules.jpg"
+        imageAlt="Softball players making a play"
         overlayOpacity="bg-black/65"
+        imagePosition="object-bottom"
       >
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-36 text-center">
           <p className="text-brand-teal font-semibold text-sm uppercase tracking-widest mb-4 animate-slide-up">
