@@ -68,13 +68,15 @@ export default function Footer() {
           {/* Brand */}
           <div className="md:col-span-2">
             <Link href="/" className="flex items-center gap-3 mb-4">
+              {/*
               <Image
                 src="/logo.png"
                 alt={`${brand.name} Logo`}
-                width={40}
-                height={40}
+                width={70}
+                height={70}
                 className="rounded-lg"
               />
+              */}
               <span className="font-bold text-xl text-white">{brand.name}</span>
             </Link>
             <p className="text-gray-400 text-sm leading-relaxed max-w-sm mb-6">

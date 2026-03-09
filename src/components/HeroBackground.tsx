@@ -1,10 +1,12 @@
 import Image from "next/image";
+import ParallaxImage from "./ParallaxImage";
 
 interface HeroBackgroundProps {
   imageSrc: string;
   imageAlt: string;
   overlayOpacity?: string;
   imagePosition?: string;
+  parallax?: boolean;
   children: React.ReactNode;
 }
 
@@ -17,20 +19,25 @@ export default function HeroBackground({
   imageAlt,
   overlayOpacity = "bg-black/60",
   imagePosition = "object-center",
+  parallax = false,
   children,
 }: HeroBackgroundProps) {
   return (
     <section className="relative overflow-hidden">
       {/* Background image */}
       <div className="absolute inset-0">
-        <Image
-          src={imageSrc}
-          alt={imageAlt}
-          fill
-          className={`object-cover ${imagePosition}`}
-          priority
-          sizes="100vw"
-        />
+        {parallax ? (
+          <ParallaxImage src={imageSrc} />
+        ) : (
+          <Image
+            src={imageSrc}
+            alt={imageAlt}
+            fill
+            className={`object-cover ${imagePosition}`}
+            priority
+            sizes="100vw"
+          />
+        )}
         {/* Dark gradient overlay */}
         <div className={`absolute inset-0 ${overlayOpacity}`} />
         {/* Bottom gradient fade into page background */}

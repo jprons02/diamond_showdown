@@ -49,6 +49,7 @@ export default function HomePage() {
         imageSrc="/hero.jpg"
         imageAlt="Softball diamond champs"
         overlayOpacity="bg-black/55"
+        parallax
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-32 sm:pt-36 sm:pb-44">
           <div className="text-center">
