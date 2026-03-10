@@ -89,8 +89,8 @@ export default function Navbar() {
             <Image
               src="/logo.png"
               alt={`${brand.name} Logo`}
-              width={36}
-              height={36}
+              width={60}
+              height={60}
               className="rounded-lg"
             />
           </Link>
