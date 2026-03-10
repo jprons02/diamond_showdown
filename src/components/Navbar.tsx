@@ -19,6 +19,7 @@ import { brand } from "@/lib/brand";
 const navItems = [
   { label: "Home", href: "/" },
   { label: "About", href: "/about" },
+  { label: "Draft", href: "/draft" },
   { label: "Rules", href: "/rules" },
   { label: "Contact", href: "/contact" },
 ];

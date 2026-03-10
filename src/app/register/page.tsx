@@ -24,7 +24,8 @@ const positions = [
   "Shortstop",
   "Third Base",
   "Left Field",
-  "Center Field",
+  "Left Center",
+  "Right Center",
   "Right Field",
   "Utility / Any",
 ];
