@@ -10,17 +10,17 @@ import {
 
 /* ─── Position color map ─── */
 const posColors: Record<string, string> = {
-  P: "bg-red-500",
-  C: "bg-orange-500",
-  "1B": "bg-yellow-500",
-  "2B": "bg-emerald-500",
-  SS: "bg-cyan-500",
-  "3B": "bg-blue-500",
-  LF: "bg-violet-500",
-  LCF: "bg-purple-500",
-  RCF: "bg-fuchsia-500",
-  RF: "bg-pink-500",
-  UTIL: "bg-slate-500",
+  P: "bg-red-500/30",
+  C: "bg-brand-teal/30",
+  "1B": "bg-brand-teal/30",
+  "2B": "bg-brand-teal/30",
+  SS: "bg-brand-teal/30",
+  "3B": "bg-brand-teal/30",
+  LF: "bg-brand-teal/30",
+  LCF: "bg-brand-teal/30",
+  RCF: "bg-brand-teal/30",
+  RF: "bg-brand-teal/30",
+  UTIL: "bg-brand-teal/30",
 };
 
 const posLabels = Object.keys(posColors);
@@ -315,7 +315,7 @@ export default function DraftPage() {
             </div>
 
             {/* Legend */}
-            <div className="flex flex-wrap gap-2">
+            {/*            <div className="flex flex-wrap gap-2">
               {posLabels.map((pos) => (
                 <span
                   key={pos}
@@ -325,6 +325,7 @@ export default function DraftPage() {
                 </span>
               ))}
             </div>
+            */}
           </div>
         </div>
       </div>
