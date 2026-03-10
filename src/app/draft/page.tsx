@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { brand } from "@/lib/brand";
 import {
   CheckCircleIcon,
@@ -254,6 +254,25 @@ function snakeIndex(round: number, pick: number, teamCount: number): number {
 
 export default function DraftPage() {
   const [selectedTeam, setSelectedTeam] = useState<number | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const colHeaderRefs = useRef<(HTMLTableCellElement | null)[]>([]);
+
+  useEffect(() => {
+    if (selectedTeam === null) return;
+    const th = colHeaderRefs.current[selectedTeam];
+    const container = scrollContainerRef.current;
+    if (!th || !container) return;
+    const containerLeft = container.getBoundingClientRect().left;
+    const thLeft = th.getBoundingClientRect().left;
+    const thWidth = th.offsetWidth;
+    const containerWidth = container.clientWidth;
+    const scrollTarget =
+      container.scrollLeft +
+      (thLeft - containerLeft) -
+      containerWidth / 2 +
+      thWidth / 2;
+    container.scrollTo({ left: scrollTarget, behavior: "smooth" });
+  }, [selectedTeam]);
 
   /* Build a grid: grid[round][teamCol] = Pick */
   const grid: (Pick | null)[][] = draftPicks.map((roundPicks, roundIdx) => {
@@ -340,7 +359,10 @@ export default function DraftPage() {
         </div>
 
         {/* Scrollable grid */}
-        <div className="overflow-x-auto rounded-2xl border border-white/5 bg-brand-surface/30">
+        <div
+          className="overflow-x-auto rounded-2xl border border-white/5 bg-brand-surface/30"
+          ref={scrollContainerRef}
+        >
           <table className="w-full min-w-[900px] border-collapse">
             <thead>
               <tr>
@@ -350,6 +372,9 @@ export default function DraftPage() {
                 {teams.map((team, idx) => (
                   <th
                     key={team}
+                    ref={(el) => {
+                      colHeaderRefs.current[idx] = el;
+                    }}
                     onClick={() =>
                       setSelectedTeam(selectedTeam === idx ? null : idx)
                     }
