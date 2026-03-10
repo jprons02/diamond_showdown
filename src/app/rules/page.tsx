@@ -191,7 +191,7 @@ export default function RulesPage() {
           {/* CTA */}
           <div className="mt-12 text-center">
             <p className="text-gray-400 mb-6">
-              Ready to play? Register your team or sign up as a free agent.
+              Ready to play? Register and get drafted onto a team.
             </p>
             <Link
               href="/register"
