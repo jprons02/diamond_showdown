@@ -23,9 +23,9 @@ const highlights = [
   },
   {
     icon: UserGroupIcon,
-    title: "Teams & Free Agents",
+    title: "Player Draft",
     description:
-      "Register as a full team or sign up as a free agent — we'll find you a squad.",
+      "Everyone registers individually and gets drafted onto a team — no squad needed to sign up.",
   },
   {
     icon: BoltIcon,
@@ -267,16 +267,15 @@ export default function HomePage() {
                 Ready to Compete?
               </h2>
               <p className="text-gray-300 mb-8 max-w-lg mx-auto text-lg">
-                Spots are limited to {brand.tournament.maxTeams} teams. Register
-                your team today for {brand.tournament.teamFee} or sign up as a
-                free agent for {brand.tournament.freeAgentFee}.
+                Spots are limited — register as a player for{" "}
+                {brand.tournament.freeAgentFee} and get drafted onto a team.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link
                   href="/register"
                   className="group inline-flex items-center justify-center px-8 py-4 text-base font-bold text-white bg-gradient-brand rounded-xl shadow-lg shadow-brand-teal/30 hover:shadow-brand-teal/50 hover:scale-105 transition-all duration-300 w-full sm:w-auto animate-pulse-glow"
                 >
-                  Register Your Team
+                  Register Now
                 </Link>
                 <Link
                   href="/rules"

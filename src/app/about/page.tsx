@@ -98,9 +98,9 @@ export default function AboutPage() {
                   most — playing great softball.
                 </p>
                 <p>
-                  Whether you&apos;re a seasoned team looking for your next
-                  challenge or a free agent ready to prove yourself, Diamond
-                  Showdown is your stage.
+                  Whether you&apos;re a seasoned player looking for your next
+                  challenge or brand new to the game, Diamond Showdown is your
+                  stage.
                 </p>
               </div>
             </div>
