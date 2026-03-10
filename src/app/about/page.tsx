@@ -46,7 +46,7 @@ export default function AboutPage() {
         imageAlt="Closeup of batting gloves"
         overlayOpacity="bg-black/60"
       >
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-36 text-center">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center h-[460px] sm:h-[520px] flex flex-col items-center justify-center">
           <p className="text-brand-teal font-semibold text-sm uppercase tracking-widest mb-4 animate-slide-up">
             About Us
           </p>

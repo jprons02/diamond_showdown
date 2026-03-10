@@ -19,6 +19,7 @@ import { brand } from "@/lib/brand";
 const navItems = [
   { label: "Home", href: "/" },
   { label: "About", href: "/about" },
+  { label: "Draft", href: "/draft" },
   { label: "Rules", href: "/rules" },
   { label: "Contact", href: "/contact" },
 ];
@@ -88,8 +89,8 @@ export default function Navbar() {
             <Image
               src="/logo.png"
               alt={`${brand.name} Logo`}
-              width={36}
-              height={36}
+              width={60}
+              height={60}
               className="rounded-lg"
             />
           </Link>

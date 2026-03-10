@@ -11,7 +11,7 @@ interface ParallaxImageProps {
 export default function ParallaxImage({ src }: ParallaxImageProps) {
   return (
     <div
-      className="absolute inset-0 bg-cover bg-center bg-fixed"
+      className="absolute inset-0 bg-cover bg-center bg-scroll sm:bg-fixed"
       style={{ backgroundImage: `url(${src})` }}
     />
   );
