@@ -368,8 +368,10 @@ export default function RegisterPage() {
                             ...prev,
                             position1: val,
                             // clear downstream conflicts
-                            position2: prev.position2 === val ? "" : prev.position2,
-                            position3: prev.position3 === val ? "" : prev.position3,
+                            position2:
+                              prev.position2 === val ? "" : prev.position2,
+                            position3:
+                              prev.position3 === val ? "" : prev.position3,
                           }));
                         }}
                         className={selectStyles}
@@ -406,7 +408,8 @@ export default function RegisterPage() {
                             ...prev,
                             position2: val,
                             // clear downstream conflict
-                            position3: prev.position3 === val ? "" : prev.position3,
+                            position3:
+                              prev.position3 === val ? "" : prev.position3,
                           }));
                         }}
                         className={selectStyles}
