@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 
 export const dynamic = "force-dynamic";
@@ -9,11 +10,18 @@ export const metadata = {
   },
 };
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const headersList = await headers();
+  const isLoginPage = headersList.get("x-admin-login") === "1";
+
+  if (isLoginPage) {
+    return <>{children}</>;
+  }
+
   return (
     <div className="flex min-h-screen bg-[#0F0F1A]">
       <AdminSidebar />

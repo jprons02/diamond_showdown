@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import {
   HomeIcon,
   TrophyIcon,
@@ -16,6 +17,7 @@ import {
   Bars3Icon,
   XMarkIcon,
   ChevronLeftIcon,
+  ArrowRightOnRectangleIcon,
 } from "@heroicons/react/24/outline";
 
 const navSections = [
@@ -58,11 +60,18 @@ const navSections = [
 
 export default function AdminSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const isActive = (href: string) => {
     if (href === "/admin") return pathname === "/admin";
     return pathname.startsWith(href);
+  };
+
+  const handleLogout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/admin/login");
   };
 
   const sidebar = (
@@ -114,8 +123,15 @@ export default function AdminSidebar() {
         ))}
       </div>
 
-      {/* Back to public site */}
-      <div className="px-3 py-4 border-t border-white/5">
+      {/* Footer */}
+      <div className="px-3 py-4 border-t border-white/5 space-y-1">
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm text-gray-500 hover:text-red-400 hover:bg-red-500/5 transition-colors"
+        >
+          <ArrowRightOnRectangleIcon className="w-4 h-4" />
+          Sign Out
+        </button>
         <Link
           href="/"
           className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm text-gray-500 hover:text-white hover:bg-white/5 transition-colors"

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { createClient } from "@/lib/supabase/client";
 import type {
   Tournament,
   RegistrationWithPlayer,
@@ -13,6 +12,8 @@ import {
   XCircleIcon,
   ClockIcon,
 } from "@heroicons/react/24/outline";
+import { Select, SelectItem } from "@heroui/react";
+import { TournamentSelector } from "@/components/admin/TournamentSelector";
 
 const CHECK_IN_COLORS: Record<string, string> = {
   checked_in: "bg-emerald-400/10 text-emerald-400 border-emerald-400/20",
@@ -28,16 +29,12 @@ export default function CheckInPage() {
   );
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const supabase = createClient();
 
   useEffect(() => {
     async function load() {
-      const { data } = await supabase
-        .from("tournaments")
-        .select("*")
-        .order("event_date", { ascending: false });
-      const list = data ?? [];
-      setTournaments(list);
+      const res = await fetch("/api/admin/tournaments");
+      const list: Tournament[] = await res.json();
+      setTournaments(Array.isArray(list) ? list : []);
       if (list.length > 0) {
         const active = list.find(
           (t) => t.status === "open" || t.status === "closed",
@@ -47,20 +44,23 @@ export default function CheckInPage() {
       setLoading(false);
     }
     load();
-  }, [supabase]);
+  }, []);
 
   const loadRegistrations = useCallback(async () => {
     if (!selectedTournamentId) return;
     setLoading(true);
-    const { data } = await supabase
-      .from("registrations")
-      .select("*, player:players(*)")
-      .eq("tournament_id", selectedTournamentId)
-      .in("registration_status", ["confirmed", "checked_in", "no_show"])
-      .order("created_at", { ascending: true });
-    setRegistrations((data as RegistrationWithPlayer[]) ?? []);
+    const res = await fetch(
+      `/api/admin/registrations?tournament_id=${selectedTournamentId}`,
+    );
+    const data = await res.json();
+    const all: RegistrationWithPlayer[] = Array.isArray(data) ? data : [];
+    setRegistrations(
+      all.filter((r) =>
+        ["confirmed", "checked_in", "no_show"].includes(r.registration_status),
+      ),
+    );
     setLoading(false);
-  }, [supabase, selectedTournamentId]);
+  }, [selectedTournamentId]);
 
   useEffect(() => {
     loadRegistrations();
@@ -73,7 +73,11 @@ export default function CheckInPage() {
     } else if (status === "no_show") {
       updates.registration_status = "no_show";
     }
-    await supabase.from("registrations").update(updates).eq("id", regId);
+    await fetch("/api/admin/registrations", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: regId, ...updates }),
+    });
     loadRegistrations();
   }
 
@@ -101,17 +105,11 @@ export default function CheckInPage() {
 
       {/* Tournament selector + stats */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <select
-          className="px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-brand-teal/50"
-          value={selectedTournamentId}
-          onChange={(e) => setSelectedTournamentId(e.target.value)}
-        >
-          {tournaments.map((t) => (
-            <option key={t.id} value={t.id}>
-              {t.name}
-            </option>
-          ))}
-        </select>
+        <TournamentSelector
+          tournaments={tournaments}
+          selectedId={selectedTournamentId}
+          onChange={setSelectedTournamentId}
+        />
 
         <div className="flex items-center gap-2">
           <div className="px-4 py-2 rounded-xl bg-emerald-400/10 border border-emerald-400/20">

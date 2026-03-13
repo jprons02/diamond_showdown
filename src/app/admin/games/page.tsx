@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { createClient } from "@/lib/supabase/client";
 import type {
   Tournament,
   Game,
@@ -17,8 +16,9 @@ import {
   CheckIcon,
   ArrowPathIcon,
   ClockIcon,
-  FunnelIcon,
 } from "@heroicons/react/24/outline";
+import { Select, SelectItem } from "@heroui/react";
+import { TournamentSelector } from "@/components/admin/TournamentSelector";
 
 const GAME_STATUS_COLORS: Record<GameStatus, string> = {
   scheduled: "bg-white/5 text-gray-400",
@@ -57,16 +57,11 @@ export default function GamesPage() {
   });
   const [gameSaving, setGameSaving] = useState(false);
 
-  const supabase = createClient();
-
   useEffect(() => {
     async function loadTournaments() {
-      const { data } = await supabase
-        .from("tournaments")
-        .select("*")
-        .order("event_date", { ascending: false });
-      const list = data ?? [];
-      setTournaments(list);
+      const res = await fetch("/api/admin/tournaments");
+      const list: Tournament[] = await res.json();
+      setTournaments(Array.isArray(list) ? list : []);
       if (list.length > 0) {
         const active = list.find(
           (t) => t.status === "open" || t.status === "closed",
@@ -76,37 +71,29 @@ export default function GamesPage() {
       setLoading(false);
     }
     loadTournaments();
-  }, [supabase]);
+  }, []);
 
   const loadGames = useCallback(async () => {
     if (!selectedTournamentId) return;
     setLoading(true);
 
-    const [gamesRes, teamsRes, fieldsRes] = await Promise.all([
-      supabase
-        .from("games")
-        .select(
-          "*, home_team:teams!games_home_team_id_fkey(*), away_team:teams!games_away_team_id_fkey(*), field:fields(*)",
-        )
-        .eq("tournament_id", selectedTournamentId)
-        .order("game_number", { ascending: true }),
-      supabase
-        .from("teams")
-        .select("*")
-        .eq("tournament_id", selectedTournamentId)
-        .order("seed", { ascending: true }),
-      supabase
-        .from("fields")
-        .select("*")
-        .eq("tournament_id", selectedTournamentId)
-        .order("sort_order", { ascending: true }),
+    const [gamesData, teamsData, fieldsData] = await Promise.all([
+      fetch(`/api/admin/games?tournament_id=${selectedTournamentId}`).then(
+        (r) => r.json(),
+      ),
+      fetch(`/api/admin/teams?tournament_id=${selectedTournamentId}`).then(
+        (r) => r.json(),
+      ),
+      fetch(`/api/admin/fields?tournament_id=${selectedTournamentId}`).then(
+        (r) => r.json(),
+      ),
     ]);
 
-    setGames((gamesRes.data as GameWithJoins[]) ?? []);
-    setTeams(teamsRes.data ?? []);
-    setFields(fieldsRes.data ?? []);
+    setGames(Array.isArray(gamesData) ? gamesData : []);
+    setTeams(Array.isArray(teamsData) ? teamsData : []);
+    setFields(Array.isArray(fieldsData) ? fieldsData : []);
     setLoading(false);
-  }, [supabase, selectedTournamentId]);
+  }, [selectedTournamentId]);
 
   useEffect(() => {
     loadGames();
@@ -123,59 +110,41 @@ export default function GamesPage() {
   async function submitScore() {
     if (!scoringGameId) return;
     setScoreSaving(true);
-
-    const game = games.find((g) => g.id === scoringGameId);
-    const homeScore = parseInt(scoreHome);
-    const awayScore = parseInt(scoreAway);
-
-    // Log score change if this was already scored
-    if (game && (game.home_score !== null || game.away_score !== null)) {
-      await supabase.from("score_audit_log").insert({
+    await fetch("/api/admin/games/score", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
         game_id: scoringGameId,
-        previous_home_score: game.home_score,
-        previous_away_score: game.away_score,
-        new_home_score: homeScore,
-        new_away_score: awayScore,
-        change_reason: scoreNotes || null,
-      });
-    }
-
-    const winner_team_id =
-      homeScore > awayScore ? game?.home_team_id : game?.away_team_id;
-    const loser_team_id =
-      homeScore > awayScore ? game?.away_team_id : game?.home_team_id;
-
-    await supabase
-      .from("games")
-      .update({
-        home_score: homeScore,
-        away_score: awayScore,
-        status: "final" as GameStatus,
-        winner_team_id: homeScore !== awayScore ? winner_team_id : null,
-        loser_team_id: homeScore !== awayScore ? loser_team_id : null,
-        notes: scoreNotes || game?.notes || null,
-      })
-      .eq("id", scoringGameId);
-
+        home_score: parseInt(scoreHome),
+        away_score: parseInt(scoreAway),
+        notes: scoreNotes || null,
+      }),
+    });
     setScoreSaving(false);
     setScoringGameId(null);
     loadGames();
   }
 
   async function reopenGame(gameId: string) {
-    await supabase
-      .from("games")
-      .update({
-        status: "in_progress" as GameStatus,
+    await fetch("/api/admin/games", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: gameId,
+        status: "in_progress",
         winner_team_id: null,
         loser_team_id: null,
-      })
-      .eq("id", gameId);
+      }),
+    });
     loadGames();
   }
 
   async function updateGameStatus(gameId: string, status: GameStatus) {
-    await supabase.from("games").update({ status }).eq("id", gameId);
+    await fetch("/api/admin/games", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: gameId, status }),
+    });
     loadGames();
   }
 
@@ -183,16 +152,20 @@ export default function GamesPage() {
   async function handleCreateGame(e: React.FormEvent) {
     e.preventDefault();
     setGameSaving(true);
-    await supabase.from("games").insert({
-      tournament_id: selectedTournamentId,
-      game_type: newGame.game_type,
-      round_name: newGame.round_name || null,
-      game_number: newGame.game_number ? parseInt(newGame.game_number) : null,
-      field_id: newGame.field_id || null,
-      home_team_id: newGame.home_team_id || null,
-      away_team_id: newGame.away_team_id || null,
-      start_time: newGame.start_time || null,
-      status: "scheduled" as GameStatus,
+    await fetch("/api/admin/games", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        tournament_id: selectedTournamentId,
+        game_type: newGame.game_type,
+        round_name: newGame.round_name || null,
+        game_number: newGame.game_number ? parseInt(newGame.game_number) : null,
+        field_id: newGame.field_id || null,
+        home_team_id: newGame.home_team_id || null,
+        away_team_id: newGame.away_team_id || null,
+        start_time: newGame.start_time || null,
+        status: "scheduled",
+      }),
     });
     setGameSaving(false);
     setShowNewGame(false);
@@ -216,6 +189,14 @@ export default function GamesPage() {
   const inputCls =
     "w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-brand-teal/50 focus:ring-1 focus:ring-brand-teal/50 transition-colors";
   const labelCls = "block text-xs font-medium text-gray-400 mb-1.5";
+  const selectCls = {
+    trigger:
+      "flex items-center bg-white/5 border-white/10 rounded-xl data-[focus=true]:border-brand-teal/50 data-[hover=true]:bg-white/8 h-[42px]",
+    value: "text-white text-sm",
+    popoverContent: "bg-brand-charcoal border border-white/10",
+    listbox: "text-white",
+    selectorIcon: "text-gray-400 mr-2",
+  };
 
   return (
     <div className="space-y-6">
@@ -236,32 +217,31 @@ export default function GamesPage() {
       </div>
 
       {/* Tournament selector + filter */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <select
-          className={inputCls + " sm:w-64"}
-          value={selectedTournamentId}
-          onChange={(e) => setSelectedTournamentId(e.target.value)}
-        >
-          {tournaments.map((t) => (
-            <option key={t.id} value={t.id}>
-              {t.name}
-            </option>
-          ))}
-        </select>
+      <div className="flex flex-col sm:flex-row gap-3 items-center">
+        <TournamentSelector
+          tournaments={tournaments}
+          selectedId={selectedTournamentId}
+          onChange={setSelectedTournamentId}
+          className="sm:w-64"
+        />
         <div className="flex items-center gap-2">
-          <FunnelIcon className="w-4 h-4 text-gray-500" />
-          <select
-            className={inputCls + " sm:w-44"}
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+          <Select
+            aria-label="Filter by status"
+            variant="bordered"
+            selectedKeys={[statusFilter]}
+            onSelectionChange={(keys) =>
+              setStatusFilter(Array.from(keys)[0] as string)
+            }
+            className="sm:w-44"
+            classNames={selectCls}
           >
-            <option value="all">All statuses</option>
-            <option value="scheduled">Scheduled</option>
-            <option value="in_progress">In Progress</option>
-            <option value="final">Final</option>
-            <option value="cancelled">Cancelled</option>
-            <option value="forfeit">Forfeit</option>
-          </select>
+            <SelectItem key="all">All statuses</SelectItem>
+            <SelectItem key="scheduled">Scheduled</SelectItem>
+            <SelectItem key="in_progress">In Progress</SelectItem>
+            <SelectItem key="final">Final</SelectItem>
+            <SelectItem key="cancelled">Cancelled</SelectItem>
+            <SelectItem key="forfeit">Forfeit</SelectItem>
+          </Select>
         </div>
       </div>
 
@@ -461,22 +441,24 @@ export default function GamesPage() {
             <form onSubmit={handleCreateGame} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className={labelCls}>Game Type</label>
-                  <select
-                    className={inputCls}
-                    value={newGame.game_type}
-                    onChange={(e) =>
+                  <Select
+                    label="Game Type"
+                    labelPlacement="outside"
+                    variant="bordered"
+                    selectedKeys={[newGame.game_type]}
+                    onSelectionChange={(keys) =>
                       setNewGame({
                         ...newGame,
-                        game_type: e.target.value as GameType,
+                        game_type: Array.from(keys)[0] as GameType,
                       })
                     }
+                    classNames={selectCls}
                   >
-                    <option value="pool">Pool</option>
-                    <option value="bracket">Bracket</option>
-                    <option value="championship">Championship</option>
-                    <option value="consolation">Consolation</option>
-                  </select>
+                    <SelectItem key="pool">Pool</SelectItem>
+                    <SelectItem key="bracket">Bracket</SelectItem>
+                    <SelectItem key="championship">Championship</SelectItem>
+                    <SelectItem key="consolation">Consolation</SelectItem>
+                  </Select>
                 </div>
                 <div>
                   <label className={labelCls}>Game #</label>
@@ -506,58 +488,85 @@ export default function GamesPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className={labelCls}>Home Team</label>
-                  <select
-                    className={inputCls}
-                    value={newGame.home_team_id}
-                    onChange={(e) =>
-                      setNewGame({ ...newGame, home_team_id: e.target.value })
+                  <Select
+                    label="Home Team"
+                    labelPlacement="outside"
+                    variant="bordered"
+                    items={[
+                      { key: "__tbd", label: "TBD" },
+                      ...teams.map((t) => ({ key: t.id, label: t.name })),
+                    ]}
+                    selectedKeys={
+                      newGame.home_team_id ? [newGame.home_team_id] : ["__tbd"]
                     }
+                    onSelectionChange={(keys) => {
+                      const val = Array.from(keys)[0] as string;
+                      setNewGame({
+                        ...newGame,
+                        home_team_id: val === "__tbd" ? "" : val,
+                      });
+                    }}
+                    classNames={selectCls}
                   >
-                    <option value="">TBD</option>
-                    {teams.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.name}
-                      </option>
-                    ))}
-                  </select>
+                    {(item) => (
+                      <SelectItem key={item.key}>{item.label}</SelectItem>
+                    )}
+                  </Select>
                 </div>
                 <div>
-                  <label className={labelCls}>Away Team</label>
-                  <select
-                    className={inputCls}
-                    value={newGame.away_team_id}
-                    onChange={(e) =>
-                      setNewGame({ ...newGame, away_team_id: e.target.value })
+                  <Select
+                    label="Away Team"
+                    labelPlacement="outside"
+                    variant="bordered"
+                    items={[
+                      { key: "__tbd", label: "TBD" },
+                      ...teams.map((t) => ({ key: t.id, label: t.name })),
+                    ]}
+                    selectedKeys={
+                      newGame.away_team_id ? [newGame.away_team_id] : ["__tbd"]
                     }
+                    onSelectionChange={(keys) => {
+                      const val = Array.from(keys)[0] as string;
+                      setNewGame({
+                        ...newGame,
+                        away_team_id: val === "__tbd" ? "" : val,
+                      });
+                    }}
+                    classNames={selectCls}
                   >
-                    <option value="">TBD</option>
-                    {teams.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.name}
-                      </option>
-                    ))}
-                  </select>
+                    {(item) => (
+                      <SelectItem key={item.key}>{item.label}</SelectItem>
+                    )}
+                  </Select>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className={labelCls}>Field</label>
-                  <select
-                    className={inputCls}
-                    value={newGame.field_id}
-                    onChange={(e) =>
-                      setNewGame({ ...newGame, field_id: e.target.value })
+                  <Select
+                    label="Field"
+                    labelPlacement="outside"
+                    variant="bordered"
+                    items={[
+                      { key: "__unassigned", label: "Unassigned" },
+                      ...fields.map((f) => ({ key: f.id, label: f.name })),
+                    ]}
+                    selectedKeys={
+                      newGame.field_id ? [newGame.field_id] : ["__unassigned"]
                     }
+                    onSelectionChange={(keys) => {
+                      const val = Array.from(keys)[0] as string;
+                      setNewGame({
+                        ...newGame,
+                        field_id: val === "__unassigned" ? "" : val,
+                      });
+                    }}
+                    classNames={selectCls}
                   >
-                    <option value="">Unassigned</option>
-                    {fields.map((f) => (
-                      <option key={f.id} value={f.id}>
-                        {f.name}
-                      </option>
-                    ))}
-                  </select>
+                    {(item) => (
+                      <SelectItem key={item.key}>{item.label}</SelectItem>
+                    )}
+                  </Select>
                 </div>
                 <div>
                   <label className={labelCls}>Start Time</label>

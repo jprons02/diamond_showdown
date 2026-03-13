@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { createClient } from "@/lib/supabase/client";
 import type { Tournament, TournamentStatus } from "@/lib/types/database";
+import { TournamentSelector } from "@/components/admin/TournamentSelector";
 import {
   EyeIcon,
   EyeSlashIcon,
@@ -73,16 +73,12 @@ export default function SettingsPage() {
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const supabase = createClient();
 
   useEffect(() => {
     async function load() {
-      const { data } = await supabase
-        .from("tournaments")
-        .select("*")
-        .order("event_date", { ascending: false });
-      const list = data ?? [];
-      setTournaments(list);
+      const res = await fetch("/api/admin/tournaments");
+      const list: Tournament[] = await res.json();
+      setTournaments(Array.isArray(list) ? list : []);
       if (list.length > 0) {
         const active = list.find(
           (t) => t.status === "open" || t.status === "closed",
@@ -92,17 +88,17 @@ export default function SettingsPage() {
       setLoading(false);
     }
     load();
-  }, [supabase]);
+  }, []);
 
   const loadTournament = useCallback(async () => {
     if (!selectedTournamentId) return;
-    const { data } = await supabase
-      .from("tournaments")
-      .select("*")
-      .eq("id", selectedTournamentId)
-      .single();
-    setTournament(data);
-  }, [supabase, selectedTournamentId]);
+    const res = await fetch("/api/admin/tournaments");
+    const list: Tournament[] = await res.json();
+    const found = Array.isArray(list)
+      ? (list.find((t) => t.id === selectedTournamentId) ?? null)
+      : null;
+    setTournament(found);
+  }, [selectedTournamentId]);
 
   useEffect(() => {
     loadTournament();
@@ -112,10 +108,11 @@ export default function SettingsPage() {
     if (!tournament) return;
     setSaving(true);
     const newValue = !tournament[key];
-    await supabase
-      .from("tournaments")
-      .update({ [key]: newValue })
-      .eq("id", tournament.id);
+    await fetch("/api/admin/tournaments", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: tournament.id, [key]: newValue }),
+    });
     setTournament({ ...tournament, [key]: newValue });
     setSaving(false);
   }
@@ -123,10 +120,11 @@ export default function SettingsPage() {
   async function handleStatusChange(status: TournamentStatus) {
     if (!tournament) return;
     setSaving(true);
-    await supabase
-      .from("tournaments")
-      .update({ status })
-      .eq("id", tournament.id);
+    await fetch("/api/admin/tournaments", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: tournament.id, status }),
+    });
     setTournament({ ...tournament, status });
     setSaving(false);
   }
@@ -140,17 +138,11 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      <select
-        className="px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-brand-teal/50"
-        value={selectedTournamentId}
-        onChange={(e) => setSelectedTournamentId(e.target.value)}
-      >
-        {tournaments.map((t) => (
-          <option key={t.id} value={t.id}>
-            {t.name}
-          </option>
-        ))}
-      </select>
+      <TournamentSelector
+        tournaments={tournaments}
+        selectedId={selectedTournamentId}
+        onChange={setSelectedTournamentId}
+      />
 
       {loading || !tournament ? (
         <div className="space-y-4">

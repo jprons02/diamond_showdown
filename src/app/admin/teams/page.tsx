@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { createClient } from "@/lib/supabase/client";
 import type {
   Tournament,
   Team,
@@ -17,6 +16,8 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
 } from "@heroicons/react/24/outline";
+import { Select, SelectItem } from "@heroui/react";
+import { TournamentSelector } from "@/components/admin/TournamentSelector";
 
 export default function TeamsPage() {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
@@ -36,16 +37,11 @@ export default function TeamsPage() {
   });
   const [saving, setSaving] = useState(false);
 
-  const supabase = createClient();
-
   useEffect(() => {
     async function loadTournaments() {
-      const { data } = await supabase
-        .from("tournaments")
-        .select("*")
-        .order("event_date", { ascending: false });
-      const list = data ?? [];
-      setTournaments(list);
+      const res = await fetch("/api/admin/tournaments");
+      const list: Tournament[] = await res.json();
+      setTournaments(Array.isArray(list) ? list : []);
       if (list.length > 0) {
         const active = list.find(
           (t) => t.status === "open" || t.status === "closed",
@@ -55,21 +51,18 @@ export default function TeamsPage() {
       setLoading(false);
     }
     loadTournaments();
-  }, [supabase]);
+  }, []);
 
   const loadTeams = useCallback(async () => {
     if (!selectedTournamentId) return;
     setLoading(true);
-    const { data } = await supabase
-      .from("teams")
-      .select(
-        "*, team_players(*, registration:registrations(*, player:players(*)))",
-      )
-      .eq("tournament_id", selectedTournamentId)
-      .order("seed", { ascending: true });
-    setTeams((data as TeamWithPlayers[]) ?? []);
+    const res = await fetch(
+      `/api/admin/teams?tournament_id=${selectedTournamentId}&include_players=true`,
+    );
+    const data = await res.json();
+    setTeams(Array.isArray(data) ? data : []);
     setLoading(false);
-  }, [supabase, selectedTournamentId]);
+  }, [selectedTournamentId]);
 
   useEffect(() => {
     loadTeams();
@@ -103,9 +96,17 @@ export default function TeamsPage() {
       coach_name: teamForm.coach_name || null,
     };
     if (editingTeamId) {
-      await supabase.from("teams").update(payload).eq("id", editingTeamId);
+      await fetch("/api/admin/teams", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: editingTeamId, ...payload }),
+      });
     } else {
-      await supabase.from("teams").insert(payload);
+      await fetch("/api/admin/teams", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
     }
     setSaving(false);
     setShowTeamForm(false);
@@ -114,21 +115,22 @@ export default function TeamsPage() {
 
   async function handleDeleteTeam(id: string) {
     if (!confirm("Delete this team and all roster assignments?")) return;
-    await supabase.from("teams").delete().eq("id", id);
+    await fetch(`/api/admin/teams?id=${id}`, { method: "DELETE" });
     loadTeams();
   }
 
   async function toggleCaptain(tp: TeamPlayer) {
-    await supabase
-      .from("team_players")
-      .update({ is_captain: !tp.is_captain })
-      .eq("id", tp.id);
+    await fetch("/api/admin/team-players", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: tp.id, is_captain: !tp.is_captain }),
+    });
     loadTeams();
   }
 
   async function removeFromRoster(tp: TeamPlayer) {
     if (!confirm("Remove this player from the team?")) return;
-    await supabase.from("team_players").delete().eq("id", tp.id);
+    await fetch(`/api/admin/team-players?id=${tp.id}`, { method: "DELETE" });
     loadTeams();
   }
 
@@ -155,17 +157,11 @@ export default function TeamsPage() {
       </div>
 
       {/* Tournament selector */}
-      <select
-        className="px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-brand-teal/50"
-        value={selectedTournamentId}
-        onChange={(e) => setSelectedTournamentId(e.target.value)}
-      >
-        {tournaments.map((t) => (
-          <option key={t.id} value={t.id}>
-            {t.name}
-          </option>
-        ))}
-      </select>
+      <TournamentSelector
+        tournaments={tournaments}
+        selectedId={selectedTournamentId}
+        onChange={setSelectedTournamentId}
+      />
 
       {/* Teams list */}
       {loading ? (

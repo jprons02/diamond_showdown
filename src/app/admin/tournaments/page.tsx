@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { createClient } from "@/lib/supabase/client";
 import type { Tournament, TournamentStatus } from "@/lib/types/database";
 import {
   PlusIcon,
@@ -9,6 +8,14 @@ import {
   TrashIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
+import { DatePicker } from "@heroui/date-picker";
+import { Select, SelectItem } from "@heroui/react";
+import {
+  parseDate,
+  parseDateTime,
+  type CalendarDate,
+  type CalendarDateTime,
+} from "@internationalized/date";
 
 const STATUS_OPTIONS: TournamentStatus[] = [
   "draft",
@@ -34,6 +41,7 @@ interface TournamentFormData {
   registration_open: string;
   registration_close: string;
   draft_datetime: string;
+  min_players: string;
   max_players: string;
   entry_fee: string;
   status: TournamentStatus;
@@ -49,11 +57,30 @@ const EMPTY_FORM: TournamentFormData = {
   registration_open: "",
   registration_close: "",
   draft_datetime: "",
+  min_players: "",
   max_players: "",
   entry_fee: "",
   status: "draft",
   rules_text: "",
 };
+
+function toCalendarDate(str: string): CalendarDate | null {
+  if (!str) return null;
+  try {
+    return parseDate(str);
+  } catch {
+    return null;
+  }
+}
+
+function toCalendarDateTime(str: string): CalendarDateTime | null {
+  if (!str) return null;
+  try {
+    return parseDateTime(str.length === 16 ? str + ":00" : str);
+  } catch {
+    return null;
+  }
+}
 
 export default function TournamentsPage() {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
@@ -62,16 +89,16 @@ export default function TournamentsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<TournamentFormData>(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
-  const supabase = createClient();
+  const [formErrors, setFormErrors] = useState<
+    Partial<Record<keyof TournamentFormData, string>>
+  >({});
 
   const loadTournaments = useCallback(async () => {
-    const { data } = await supabase
-      .from("tournaments")
-      .select("*")
-      .order("event_date", { ascending: false });
-    setTournaments(data ?? []);
+    const res = await fetch("/api/admin/tournaments");
+    const data = await res.json();
+    setTournaments(Array.isArray(data) ? data : []);
     setLoading(false);
-  }, [supabase]);
+  }, []);
 
   useEffect(() => {
     loadTournaments();
@@ -87,11 +114,13 @@ export default function TournamentsPage() {
   function openCreateForm() {
     setEditingId(null);
     setForm(EMPTY_FORM);
+    setFormErrors({});
     setShowForm(true);
   }
 
   function openEditForm(t: Tournament) {
     setEditingId(t.id);
+    setFormErrors({});
     setForm({
       name: t.name,
       slug: t.slug,
@@ -101,6 +130,7 @@ export default function TournamentsPage() {
       registration_open: t.registration_open?.slice(0, 16) ?? "",
       registration_close: t.registration_close?.slice(0, 16) ?? "",
       draft_datetime: t.draft_datetime?.slice(0, 16) ?? "",
+      min_players: t.min_players?.toString() ?? "",
       max_players: t.max_players?.toString() ?? "",
       entry_fee: t.entry_fee?.toString() ?? "",
       status: t.status,
@@ -109,8 +139,59 @@ export default function TournamentsPage() {
     setShowForm(true);
   }
 
+  function validateForm(
+    data: TournamentFormData,
+  ): Partial<Record<keyof TournamentFormData, string>> {
+    const errors: Partial<Record<keyof TournamentFormData, string>> = {};
+    const {
+      registration_open,
+      registration_close,
+      draft_datetime,
+      event_date,
+    } = data;
+
+    if (
+      registration_open &&
+      registration_close &&
+      registration_close < registration_open
+    ) {
+      errors.registration_close =
+        "Registration close must be after registration open.";
+    }
+    if (
+      registration_close &&
+      draft_datetime &&
+      draft_datetime.slice(0, 10) < registration_close
+    ) {
+      errors.draft_datetime = "Draft date cannot be before registration close.";
+    }
+    if (
+      draft_datetime &&
+      event_date &&
+      event_date < draft_datetime.slice(0, 10)
+    ) {
+      errors.draft_datetime =
+        (errors.draft_datetime ? errors.draft_datetime + " " : "") +
+        "Draft date cannot be after event date.";
+    }
+    if (registration_open && event_date && event_date < registration_open) {
+      errors.event_date = "Event date must be after registration opens.";
+    }
+    if (registration_close && event_date && event_date < registration_close) {
+      errors.event_date = "Event date must be after registration closes.";
+    }
+
+    return errors;
+  }
+
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
+    const errors = validateForm(form);
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
+    setFormErrors({});
     setSaving(true);
 
     const payload = {
@@ -122,6 +203,7 @@ export default function TournamentsPage() {
       registration_open: form.registration_open || null,
       registration_close: form.registration_close || null,
       draft_datetime: form.draft_datetime || null,
+      min_players: form.min_players ? parseInt(form.min_players) : null,
       max_players: form.max_players ? parseInt(form.max_players) : null,
       entry_fee: form.entry_fee ? parseFloat(form.entry_fee) : null,
       status: form.status,
@@ -129,9 +211,17 @@ export default function TournamentsPage() {
     };
 
     if (editingId) {
-      await supabase.from("tournaments").update(payload).eq("id", editingId);
+      await fetch("/api/admin/tournaments", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: editingId, ...payload }),
+      });
     } else {
-      await supabase.from("tournaments").insert(payload);
+      await fetch("/api/admin/tournaments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
     }
 
     setSaving(false);
@@ -146,7 +236,7 @@ export default function TournamentsPage() {
       )
     )
       return;
-    await supabase.from("tournaments").delete().eq("id", id);
+    await fetch(`/api/admin/tournaments?id=${id}`, { method: "DELETE" });
     loadTournaments();
   }
 
@@ -287,34 +377,62 @@ export default function TournamentsPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className={labelCls}>Event Date</label>
-                  <input
-                    type="date"
-                    className={inputCls}
-                    value={form.event_date}
-                    onChange={(e) =>
-                      setForm({ ...form, event_date: e.target.value })
-                    }
+                  <DatePicker
+                    label="Event Date"
+                    labelPlacement="outside"
+                    granularity="day"
+                    variant="bordered"
+                    isInvalid={!!formErrors.event_date}
+                    errorMessage={formErrors.event_date}
+                    value={toCalendarDate(form.event_date)}
+                    onChange={(val) => {
+                      const updated = {
+                        ...form,
+                        event_date: val ? val.toString() : "",
+                      };
+                      setForm(updated);
+                      setFormErrors(validateForm(updated));
+                    }}
+                    classNames={{
+                      base: "w-full",
+                      label: "text-xs font-medium !text-gray-400",
+                      inputWrapper:
+                        "bg-white/5 border-white/10 rounded-xl data-[focus=true]:border-brand-teal/50 data-[hover=true]:bg-white/8",
+                      segment:
+                        "text-white data-[placeholder=true]:text-gray-500",
+                      selectorIcon: "text-gray-400",
+                    }}
                   />
                 </div>
                 <div>
-                  <label className={labelCls}>Status</label>
-                  <select
-                    className={inputCls}
-                    value={form.status}
-                    onChange={(e) =>
+                  <Select
+                    label="Status"
+                    labelPlacement="outside"
+                    variant="bordered"
+                    selectedKeys={[form.status]}
+                    onSelectionChange={(keys) =>
                       setForm({
                         ...form,
-                        status: e.target.value as TournamentStatus,
+                        status: Array.from(keys)[0] as TournamentStatus,
                       })
                     }
+                    classNames={{
+                      base: "w-full",
+                      label: "text-xs font-medium !text-gray-400",
+                      trigger:
+                        "bg-white/5 border-white/10 rounded-xl data-[focus=true]:border-brand-teal/50 data-[hover=true]:bg-white/8 h-[42px]",
+                      value: "text-white text-sm",
+                      popoverContent:
+                        "bg-brand-charcoal border border-white/10",
+                      listbox: "text-white",
+                    }}
                   >
                     {STATUS_OPTIONS.map((s) => (
-                      <option key={s} value={s}>
+                      <SelectItem key={s}>
                         {s.charAt(0).toUpperCase() + s.slice(1)}
-                      </option>
+                      </SelectItem>
                     ))}
-                  </select>
+                  </Select>
                 </div>
               </div>
 
@@ -343,43 +461,107 @@ export default function TournamentsPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className={labelCls}>Registration Opens</label>
-                  <input
-                    type="datetime-local"
-                    className={inputCls}
-                    value={form.registration_open}
-                    onChange={(e) =>
-                      setForm({ ...form, registration_open: e.target.value })
-                    }
+                  <DatePicker
+                    label="Registration Opens"
+                    labelPlacement="outside"
+                    granularity="day"
+                    variant="bordered"
+                    value={toCalendarDate(form.registration_open)}
+                    onChange={(val) => {
+                      const updated = {
+                        ...form,
+                        registration_open: val ? val.toString() : "",
+                      };
+                      setForm(updated);
+                      setFormErrors(validateForm(updated));
+                    }}
+                    classNames={{
+                      base: "w-full",
+                      label: "text-xs font-medium !text-gray-400",
+                      inputWrapper:
+                        "bg-white/5 border-white/10 rounded-xl data-[focus=true]:border-brand-teal/50 data-[hover=true]:bg-white/8",
+                      segment:
+                        "text-white data-[placeholder=true]:text-gray-500",
+                      selectorIcon: "text-gray-400",
+                    }}
                   />
                 </div>
                 <div>
-                  <label className={labelCls}>Registration Closes</label>
-                  <input
-                    type="datetime-local"
-                    className={inputCls}
-                    value={form.registration_close}
-                    onChange={(e) =>
-                      setForm({ ...form, registration_close: e.target.value })
-                    }
-                  />
-                </div>
-                <div>
-                  <label className={labelCls}>Draft Date/Time</label>
-                  <input
-                    type="datetime-local"
-                    className={inputCls}
-                    value={form.draft_datetime}
-                    onChange={(e) =>
-                      setForm({ ...form, draft_datetime: e.target.value })
-                    }
+                  <DatePicker
+                    label="Registration Closes"
+                    labelPlacement="outside"
+                    granularity="day"
+                    variant="bordered"
+                    isInvalid={!!formErrors.registration_close}
+                    errorMessage={formErrors.registration_close}
+                    value={toCalendarDate(form.registration_close)}
+                    onChange={(val) => {
+                      const updated = {
+                        ...form,
+                        registration_close: val ? val.toString() : "",
+                      };
+                      setForm(updated);
+                      setFormErrors(validateForm(updated));
+                    }}
+                    classNames={{
+                      base: "w-full",
+                      label: "text-xs font-medium !text-gray-400",
+                      inputWrapper:
+                        "bg-white/5 border-white/10 rounded-xl data-[focus=true]:border-brand-teal/50 data-[hover=true]:bg-white/8",
+                      segment:
+                        "text-white data-[placeholder=true]:text-gray-500",
+                      selectorIcon: "text-gray-400",
+                    }}
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <DatePicker
+                    label="Draft Date"
+                    labelPlacement="outside"
+                    granularity="day"
+                    variant="bordered"
+                    isInvalid={!!formErrors.draft_datetime}
+                    errorMessage={formErrors.draft_datetime}
+                    value={toCalendarDate(form.draft_datetime)}
+                    onChange={(val) => {
+                      const updated = {
+                        ...form,
+                        draft_datetime: val ? val.toString() : "",
+                      };
+                      setForm(updated);
+                      setFormErrors(validateForm(updated));
+                    }}
+                    classNames={{
+                      base: "w-full",
+                      label: "text-xs font-medium !text-gray-400",
+                      inputWrapper:
+                        "bg-white/5 border-white/10 rounded-xl data-[focus=true]:border-brand-teal/50 data-[hover=true]:bg-white/8",
+                      segment:
+                        "text-white data-[placeholder=true]:text-gray-500",
+                      selectorIcon: "text-gray-400",
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className={labelCls}>Min Players</label>
+                  <input
+                    type="number"
+                    className={inputCls}
+                    value={form.min_players}
+                    onChange={(e) =>
+                      setForm({ ...form, min_players: e.target.value })
+                    }
+                    placeholder="70"
+                  />
+                </div>
                 <div>
                   <label className={labelCls}>Max Players</label>
                   <input
@@ -389,7 +571,7 @@ export default function TournamentsPage() {
                     onChange={(e) =>
                       setForm({ ...form, max_players: e.target.value })
                     }
-                    placeholder="64"
+                    placeholder="100"
                   />
                 </div>
                 <div>

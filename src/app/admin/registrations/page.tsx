@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { createClient } from "@/lib/supabase/client";
 import type {
   Tournament,
   RegistrationWithJoins,
@@ -14,6 +13,8 @@ import {
   XCircleIcon,
   FunnelIcon,
 } from "@heroicons/react/24/outline";
+import { Select, SelectItem } from "@heroui/react";
+import { TournamentSelector } from "@/components/admin/TournamentSelector";
 
 const REG_STATUS_COLORS: Record<RegistrationStatus, string> = {
   pending: "bg-amber-400/10 text-amber-400",
@@ -41,17 +42,13 @@ export default function RegistrationsPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const supabase = createClient();
 
   // Load tournaments for the selector
   useEffect(() => {
     async function loadTournaments() {
-      const { data } = await supabase
-        .from("tournaments")
-        .select("*")
-        .order("event_date", { ascending: false });
-      const list = data ?? [];
-      setTournaments(list);
+      const res = await fetch("/api/admin/tournaments");
+      const list: Tournament[] = await res.json();
+      setTournaments(Array.isArray(list) ? list : []);
       if (list.length > 0) {
         const active = list.find(
           (t) => t.status === "open" || t.status === "closed",
@@ -61,19 +58,18 @@ export default function RegistrationsPage() {
       setLoading(false);
     }
     loadTournaments();
-  }, [supabase]);
+  }, []);
 
   const loadRegistrations = useCallback(async () => {
     if (!selectedTournamentId) return;
     setLoading(true);
-    const { data } = await supabase
-      .from("registrations")
-      .select("*, player:players(*), waiver:waivers(*)")
-      .eq("tournament_id", selectedTournamentId)
-      .order("created_at", { ascending: false });
-    setRegistrations((data as RegistrationWithJoins[]) ?? []);
+    const res = await fetch(
+      `/api/admin/registrations?tournament_id=${selectedTournamentId}`,
+    );
+    const data = await res.json();
+    setRegistrations(Array.isArray(data) ? data : []);
     setLoading(false);
-  }, [supabase, selectedTournamentId]);
+  }, [selectedTournamentId]);
 
   useEffect(() => {
     loadRegistrations();
@@ -83,10 +79,11 @@ export default function RegistrationsPage() {
     id: string,
     registration_status: RegistrationStatus,
   ) {
-    await supabase
-      .from("registrations")
-      .update({ registration_status })
-      .eq("id", id);
+    await fetch("/api/admin/registrations", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, registration_status }),
+    });
     loadRegistrations();
   }
 
@@ -94,10 +91,11 @@ export default function RegistrationsPage() {
     id: string,
     payment_status: PaymentStatus,
   ) {
-    await supabase
-      .from("registrations")
-      .update({ payment_status })
-      .eq("id", id);
+    await fetch("/api/admin/registrations", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, payment_status }),
+    });
     loadRegistrations();
   }
 
@@ -130,17 +128,11 @@ export default function RegistrationsPage() {
 
       {/* Tournament selector + stats row */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <select
-          className="px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-brand-teal/50"
-          value={selectedTournamentId}
-          onChange={(e) => setSelectedTournamentId(e.target.value)}
-        >
-          {tournaments.map((t) => (
-            <option key={t.id} value={t.id}>
-              {t.name}
-            </option>
-          ))}
-        </select>
+        <TournamentSelector
+          tournaments={tournaments}
+          selectedId={selectedTournamentId}
+          onChange={setSelectedTournamentId}
+        />
 
         <div className="flex items-center gap-4 text-xs text-gray-400">
           <span>

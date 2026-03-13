@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { createClient } from "@/lib/supabase/client";
 import type { Tournament, Field } from "@/lib/types/database";
 import {
   PlusIcon,
@@ -9,6 +8,8 @@ import {
   TrashIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
+import { Select, SelectItem } from "@heroui/react";
+import { TournamentSelector } from "@/components/admin/TournamentSelector";
 
 export default function FieldsPage() {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
@@ -21,16 +22,11 @@ export default function FieldsPage() {
   const [form, setForm] = useState({ name: "", sort_order: "", notes: "" });
   const [saving, setSaving] = useState(false);
 
-  const supabase = createClient();
-
   useEffect(() => {
     async function loadTournaments() {
-      const { data } = await supabase
-        .from("tournaments")
-        .select("*")
-        .order("event_date", { ascending: false });
-      const list = data ?? [];
-      setTournaments(list);
+      const res = await fetch("/api/admin/tournaments");
+      const list: Tournament[] = await res.json();
+      setTournaments(Array.isArray(list) ? list : []);
       if (list.length > 0) {
         const active = list.find(
           (t) => t.status === "open" || t.status === "closed",
@@ -40,19 +36,18 @@ export default function FieldsPage() {
       setLoading(false);
     }
     loadTournaments();
-  }, [supabase]);
+  }, []);
 
   const loadFields = useCallback(async () => {
     if (!selectedTournamentId) return;
     setLoading(true);
-    const { data } = await supabase
-      .from("fields")
-      .select("*")
-      .eq("tournament_id", selectedTournamentId)
-      .order("sort_order", { ascending: true });
-    setFields(data ?? []);
+    const res = await fetch(
+      `/api/admin/fields?tournament_id=${selectedTournamentId}`,
+    );
+    const data = await res.json();
+    setFields(Array.isArray(data) ? data : []);
     setLoading(false);
-  }, [supabase, selectedTournamentId]);
+  }, [selectedTournamentId]);
 
   useEffect(() => {
     loadFields();
@@ -84,9 +79,17 @@ export default function FieldsPage() {
       notes: form.notes || null,
     };
     if (editingId) {
-      await supabase.from("fields").update(payload).eq("id", editingId);
+      await fetch("/api/admin/fields", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: editingId, ...payload }),
+      });
     } else {
-      await supabase.from("fields").insert(payload);
+      await fetch("/api/admin/fields", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
     }
     setSaving(false);
     setShowForm(false);
@@ -95,7 +98,7 @@ export default function FieldsPage() {
 
   async function handleDelete(id: string) {
     if (!confirm("Delete this field?")) return;
-    await supabase.from("fields").delete().eq("id", id);
+    await fetch(`/api/admin/fields?id=${id}`, { method: "DELETE" });
     loadFields();
   }
 
@@ -121,17 +124,11 @@ export default function FieldsPage() {
         </button>
       </div>
 
-      <select
-        className="px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-brand-teal/50"
-        value={selectedTournamentId}
-        onChange={(e) => setSelectedTournamentId(e.target.value)}
-      >
-        {tournaments.map((t) => (
-          <option key={t.id} value={t.id}>
-            {t.name}
-          </option>
-        ))}
-      </select>
+      <TournamentSelector
+        tournaments={tournaments}
+        selectedId={selectedTournamentId}
+        onChange={setSelectedTournamentId}
+      />
 
       {loading ? (
         <div className="space-y-3">

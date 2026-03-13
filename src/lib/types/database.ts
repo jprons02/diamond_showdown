@@ -48,6 +48,7 @@ export type Tournament = {
   registration_open: string | null;
   registration_close: string | null;
   draft_datetime: string | null;
+  min_players: number | null;
   max_players: number | null;
   entry_fee: number | null;
   status: TournamentStatus;
