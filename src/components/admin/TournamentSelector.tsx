@@ -14,7 +14,7 @@ export function TournamentSelector({
   tournaments,
   selectedId,
   onChange,
-  className = "w-full sm:w-64",
+  className = "w-full sm:w-80",
 }: TournamentSelectorProps) {
   return (
     <Select
@@ -26,14 +26,17 @@ export function TournamentSelector({
       classNames={{
         trigger:
           "flex items-center bg-white/5 border-white/10 rounded-xl data-[focus=true]:border-brand-teal/50 data-[hover=true]:bg-white/8 h-[42px]",
-        value: "text-white text-sm",
+        value: "text-white text-sm whitespace-normal",
         popoverContent: "bg-brand-charcoal border border-white/10",
         listbox: "text-white",
-        selectorIcon: "text-gray-400",
+        listboxWrapper: "max-h-64",
+        selectorIcon: "text-gray-400 shrink-0",
       }}
     >
       {tournaments.map((t) => (
-        <SelectItem key={t.id}>{t.name}</SelectItem>
+        <SelectItem key={t.id} classNames={{ title: "whitespace-normal" }}>
+          {t.name}
+        </SelectItem>
       ))}
     </Select>
   );
