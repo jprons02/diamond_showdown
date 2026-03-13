@@ -52,25 +52,20 @@ export default function AdminDashboardPage() {
         let upcomingGames: Game[] = [];
 
         if (activeTournament) {
-          const { count: regCount } = await supabase
-            .from("registrations")
-            .select("*", { count: "exact", head: true })
-            .eq("tournament_id", activeTournament.id);
-          totalRegistrations = regCount ?? 0;
-
-          const { count: paidCount } = await supabase
-            .from("registrations")
-            .select("*", { count: "exact", head: true })
-            .eq("tournament_id", activeTournament.id)
-            .eq("payment_status", "paid");
-          paidRegistrations = paidCount ?? 0;
-
-          const { count: checkInCount } = await supabase
-            .from("registrations")
-            .select("*", { count: "exact", head: true })
-            .eq("tournament_id", activeTournament.id)
-            .eq("check_in_status", "checked_in");
-          checkedIn = checkInCount ?? 0;
+          const regsData = await fetch(
+            `/api/admin/registrations?tournament_id=${activeTournament.id}`,
+          ).then((r) => r.json());
+          const regs: Array<{
+            payment_status: string;
+            check_in_status: string | null;
+          }> = Array.isArray(regsData) ? regsData : [];
+          totalRegistrations = regs.length;
+          paidRegistrations = regs.filter(
+            (r) => r.payment_status === "paid",
+          ).length;
+          checkedIn = regs.filter(
+            (r) => r.check_in_status === "checked_in",
+          ).length;
 
           const { data: games } = await supabase
             .from("games")
