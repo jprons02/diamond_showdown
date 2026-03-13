@@ -11,7 +11,6 @@ import {
   MagnifyingGlassIcon,
   CheckCircleIcon,
   XCircleIcon,
-  FunnelIcon,
 } from "@heroicons/react/24/outline";
 import { Select, SelectItem } from "@heroui/react";
 import { TournamentSelector } from "@/components/admin/TournamentSelector";
@@ -161,7 +160,6 @@ export default function RegistrationsPage() {
           />
         </div>
         <div className="flex items-center gap-2">
-          <FunnelIcon className="w-4 h-4 text-gray-500" />
           <Select
             aria-label="Filter by status"
             variant="bordered"

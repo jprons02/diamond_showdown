@@ -16,7 +16,10 @@ import {
   CheckIcon,
   ArrowPathIcon,
   ClockIcon,
+  TrashIcon,
 } from "@heroicons/react/24/outline";
+
+const isDev = process.env.NODE_ENV === "development";
 import { Select, SelectItem } from "@heroui/react";
 import { TournamentSelector } from "@/components/admin/TournamentSelector";
 import { RowSkeleton, SaveSpinner } from "@/components/admin/AdminLoading";
@@ -154,6 +157,14 @@ export default function GamesPage() {
     loadGames();
   }
 
+  async function deleteGame(gameId: string) {
+    if (!confirm("Delete this game? This cannot be undone.")) return;
+    setActionGameId(gameId);
+    await fetch(`/api/admin/games?id=${gameId}`, { method: "DELETE" });
+    setActionGameId(null);
+    loadGames();
+  }
+
   // ─── Create Game ──────────────────────────────────────────
   async function handleCreateGame(e: React.FormEvent) {
     e.preventDefault();
@@ -228,9 +239,9 @@ export default function GamesPage() {
           tournaments={tournaments}
           selectedId={selectedTournamentId}
           onChange={setSelectedTournamentId}
-          className="sm:w-64"
+          className="w-full sm:w-64"
         />
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <Select
             aria-label="Filter by status"
             variant="bordered"
@@ -238,7 +249,7 @@ export default function GamesPage() {
             onSelectionChange={(keys) =>
               setStatusFilter(Array.from(keys)[0] as string)
             }
-            className="sm:w-44"
+            className="w-full sm:w-44"
             classNames={selectCls}
           >
             <SelectItem key="all">All statuses</SelectItem>
@@ -359,6 +370,16 @@ export default function GamesPage() {
                           <ArrowPathIcon className="w-3 h-3" />
                         )}
                         Reopen
+                      </button>
+                    )}
+                    {isDev && (
+                      <button
+                        onClick={() => deleteGame(game.id)}
+                        disabled={actionGameId === game.id}
+                        className="p-2 rounded-lg hover:bg-red-500/10 text-gray-400 hover:text-red-400 transition-colors disabled:opacity-50"
+                        title="Delete game (dev only)"
+                      >
+                        <TrashIcon className="w-4 h-4" />
                       </button>
                     )}
                   </div>
