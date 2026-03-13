@@ -43,6 +43,14 @@
     background: linear-gradient(180deg, #0f0f1a 0%, #16162a 50%, #1a1a2e 100%);
   }
 
+  /* Square Web Payments SDK card widget container */
+  .sq-card-wrapper {
+    min-height: 56px;
+  }
+  .sq-card-wrapper iframe {
+    border-radius: 0.75rem;
+  }
+
   .glow-teal {
     box-shadow:
       0 0 20px rgba(14, 211, 207, 0.3),
