@@ -18,10 +18,8 @@ import { brand } from "@/lib/brand";
 
 const navItems = [
   { label: "Home", href: "/" },
+  { label: "Tournament", href: "/tournament" },
   { label: "About", href: "/about" },
-  { label: "Bracket", href: "/bracket" },
-  { label: "Draft", href: "/draft" },
-  { label: "Rules", href: "/rules" },
   { label: "Contact", href: "/contact" },
 ];
 
@@ -66,20 +64,26 @@ export default function Navbar() {
 
       {/* Desktop nav */}
       <NavbarContent className="hidden md:flex gap-6" justify="center">
-        {navItems.map((item) => (
-          <NavbarItem key={item.href} isActive={pathname === item.href}>
-            <Link
-              href={item.href}
-              className={`text-sm font-medium transition-colors ${
-                pathname === item.href
-                  ? "text-brand-teal"
-                  : "text-gray-300 hover:text-white"
-              }`}
-            >
-              {item.label}
-            </Link>
-          </NavbarItem>
-        ))}
+        {navItems.map((item) => {
+          const isActive =
+            item.href === "/"
+              ? pathname === "/"
+              : pathname.startsWith(item.href);
+          return (
+            <NavbarItem key={item.href} isActive={isActive}>
+              <Link
+                href={item.href}
+                className={`text-sm font-medium transition-colors ${
+                  isActive
+                    ? "text-brand-teal"
+                    : "text-gray-300 hover:text-white"
+                }`}
+              >
+                {item.label}
+              </Link>
+            </NavbarItem>
+          );
+        })}
       </NavbarContent>
 
       {/* CTA */}
@@ -112,21 +116,27 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       <NavbarMenu className="bg-brand-dark/95 backdrop-blur-xl pt-6">
-        {navItems.map((item) => (
-          <NavbarMenuItem key={item.href}>
-            <Link
-              href={item.href}
-              onClick={() => setIsMenuOpen(false)}
-              className={`block w-full py-3 text-lg font-medium transition-colors ${
-                pathname === item.href
-                  ? "text-brand-teal"
-                  : "text-gray-300 hover:text-white"
-              }`}
-            >
-              {item.label}
-            </Link>
-          </NavbarMenuItem>
-        ))}
+        {navItems.map((item) => {
+          const isActive =
+            item.href === "/"
+              ? pathname === "/"
+              : pathname.startsWith(item.href);
+          return (
+            <NavbarMenuItem key={item.href}>
+              <Link
+                href={item.href}
+                onClick={() => setIsMenuOpen(false)}
+                className={`block w-full py-3 text-lg font-medium transition-colors ${
+                  isActive
+                    ? "text-brand-teal"
+                    : "text-gray-300 hover:text-white"
+                }`}
+              >
+                {item.label}
+              </Link>
+            </NavbarMenuItem>
+          );
+        })}
         <NavbarMenuItem>
           <Button
             as={Link}

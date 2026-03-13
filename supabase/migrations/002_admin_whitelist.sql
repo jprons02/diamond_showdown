@@ -16,4 +16,4 @@ create policy "Users can check own whitelist status"
   using (email = auth.jwt() ->> 'email');
 
 -- Seed the first whitelisted admin
-insert into public.admin_whitelist (email) values ('joseph.ronselli@gmail.com');
+insert into public.admin_whitelist (email) values ('diamondshowdown1@gmail.com');
