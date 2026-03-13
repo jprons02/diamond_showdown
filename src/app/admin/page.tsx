@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
 import type { Tournament, Game } from "@/lib/types/database";
 import {
   TrophyIcon,
@@ -12,6 +11,7 @@ import {
   ArrowRightIcon,
   ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
+import { CardSkeleton, RowSkeleton } from "@/components/admin/AdminLoading";
 
 interface DashboardStats {
   totalTournaments: number;
@@ -28,20 +28,18 @@ interface DashboardStats {
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const supabase = createClient();
 
   useEffect(() => {
     async function loadDashboard() {
       try {
-        const { data: tournaments } = await supabase
-          .from("tournaments")
-          .select("*")
-          .order("event_date", { ascending: false });
+        const tournaments: Tournament[] = await fetch(
+          "/api/admin/tournaments",
+        ).then((r) => r.json());
 
+        const list = Array.isArray(tournaments) ? tournaments : [];
         const activeTournament =
-          tournaments?.find(
-            (t) => t.status === "open" || t.status === "closed",
-          ) ?? null;
+          list.find((t) => t.status === "open" || t.status === "closed") ??
+          null;
 
         let totalRegistrations = 0;
         let paidRegistrations = 0;
@@ -52,9 +50,15 @@ export default function AdminDashboardPage() {
         let upcomingGames: Game[] = [];
 
         if (activeTournament) {
-          const regsData = await fetch(
-            `/api/admin/registrations?tournament_id=${activeTournament.id}`,
-          ).then((r) => r.json());
+          const [regsData, gamesData] = await Promise.all([
+            fetch(
+              `/api/admin/registrations?tournament_id=${activeTournament.id}`,
+            ).then((r) => r.json()),
+            fetch(`/api/admin/games?tournament_id=${activeTournament.id}`).then(
+              (r) => r.json(),
+            ),
+          ]);
+
           const regs: Array<{
             payment_status: string;
             check_in_status: string | null;
@@ -67,32 +71,24 @@ export default function AdminDashboardPage() {
             (r) => r.check_in_status === "checked_in",
           ).length;
 
-          const { data: games } = await supabase
-            .from("games")
-            .select("*")
-            .eq("tournament_id", activeTournament.id);
-
-          if (games) {
-            gamesScheduled = games.filter(
-              (g) => g.status === "scheduled",
-            ).length;
-            gamesInProgress = games.filter(
-              (g) => g.status === "in_progress",
-            ).length;
-            gamesCompleted = games.filter((g) => g.status === "final").length;
-            upcomingGames = games
-              .filter(
-                (g) => g.status === "scheduled" || g.status === "in_progress",
-              )
-              .sort((a, b) =>
-                (a.start_time ?? "").localeCompare(b.start_time ?? ""),
-              )
-              .slice(0, 5);
-          }
+          const games: Game[] = Array.isArray(gamesData) ? gamesData : [];
+          gamesScheduled = games.filter((g) => g.status === "scheduled").length;
+          gamesInProgress = games.filter(
+            (g) => g.status === "in_progress",
+          ).length;
+          gamesCompleted = games.filter((g) => g.status === "final").length;
+          upcomingGames = games
+            .filter(
+              (g) => g.status === "scheduled" || g.status === "in_progress",
+            )
+            .sort((a, b) =>
+              (a.start_time ?? "").localeCompare(b.start_time ?? ""),
+            )
+            .slice(0, 5);
         }
 
         setStats({
-          totalTournaments: tournaments?.length ?? 0,
+          totalTournaments: list.length,
           activeTournament,
           totalRegistrations,
           paidRegistrations,
@@ -110,19 +106,19 @@ export default function AdminDashboardPage() {
     }
 
     loadDashboard();
-  }, [supabase]);
+  }, []);
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div
-              key={i}
-              className="h-28 rounded-2xl bg-brand-surface animate-pulse"
-            />
-          ))}
+      <div className="space-y-8">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Dashboard</h1>
+          <p className="text-gray-400 text-sm mt-1">Loading…</p>
+        </div>
+        <CardSkeleton count={4} />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <RowSkeleton count={4} height="h-14" />
+          <RowSkeleton count={3} height="h-16" />
         </div>
       </div>
     );

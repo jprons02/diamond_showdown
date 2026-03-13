@@ -19,6 +19,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { Select, SelectItem } from "@heroui/react";
 import { TournamentSelector } from "@/components/admin/TournamentSelector";
+import { RowSkeleton, SaveSpinner } from "@/components/admin/AdminLoading";
 
 const GAME_STATUS_COLORS: Record<GameStatus, string> = {
   scheduled: "bg-white/5 text-gray-400",
@@ -43,6 +44,7 @@ export default function GamesPage() {
   const [scoreAway, setScoreAway] = useState("");
   const [scoreNotes, setScoreNotes] = useState("");
   const [scoreSaving, setScoreSaving] = useState(false);
+  const [actionGameId, setActionGameId] = useState<string | null>(null);
 
   // New game form
   const [showNewGame, setShowNewGame] = useState(false);
@@ -126,6 +128,7 @@ export default function GamesPage() {
   }
 
   async function reopenGame(gameId: string) {
+    setActionGameId(gameId);
     await fetch("/api/admin/games", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -136,15 +139,18 @@ export default function GamesPage() {
         loser_team_id: null,
       }),
     });
+    setActionGameId(null);
     loadGames();
   }
 
   async function updateGameStatus(gameId: string, status: GameStatus) {
+    setActionGameId(gameId);
     await fetch("/api/admin/games", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: gameId, status }),
     });
+    setActionGameId(null);
     loadGames();
   }
 
@@ -247,14 +253,7 @@ export default function GamesPage() {
 
       {/* Games list */}
       {loading ? (
-        <div className="space-y-3">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div
-              key={i}
-              className="h-24 rounded-2xl bg-brand-surface animate-pulse"
-            />
-          ))}
-        </div>
+        <RowSkeleton count={4} height="h-24" />
       ) : filtered.length === 0 ? (
         <div className="rounded-2xl bg-brand-surface border border-white/5 p-12 text-center">
           <p className="text-gray-400">No games found</p>
@@ -330,8 +329,12 @@ export default function GamesPage() {
                     {game.status === "scheduled" && (
                       <button
                         onClick={() => updateGameStatus(game.id, "in_progress")}
-                        className="text-xs px-3 py-1.5 rounded-lg bg-amber-400/10 text-amber-400 hover:bg-amber-400/20 transition-colors"
+                        disabled={actionGameId === game.id}
+                        className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-amber-400/10 text-amber-400 hover:bg-amber-400/20 transition-colors disabled:opacity-50"
                       >
+                        {actionGameId === game.id ? (
+                          <SaveSpinner className="w-3 h-3" />
+                        ) : null}
                         Start Game
                       </button>
                     )}
@@ -347,9 +350,14 @@ export default function GamesPage() {
                     {game.status === "final" && (
                       <button
                         onClick={() => reopenGame(game.id)}
-                        className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
+                        disabled={actionGameId === game.id}
+                        className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors disabled:opacity-50"
                       >
-                        <ArrowPathIcon className="w-3 h-3" />
+                        {actionGameId === game.id ? (
+                          <SaveSpinner className="w-3 h-3" />
+                        ) : (
+                          <ArrowPathIcon className="w-3 h-3" />
+                        )}
                         Reopen
                       </button>
                     )}
@@ -398,9 +406,13 @@ export default function GamesPage() {
                         <button
                           onClick={submitScore}
                           disabled={scoreSaving || !scoreHome || !scoreAway}
-                          className="p-2.5 rounded-xl bg-gradient-brand text-white hover:opacity-90 transition-opacity disabled:opacity-50"
+                          className="flex items-center justify-center p-2.5 rounded-xl bg-gradient-brand text-white hover:opacity-90 transition-opacity disabled:opacity-50"
                         >
-                          <CheckIcon className="w-5 h-5" />
+                          {scoreSaving ? (
+                            <SaveSpinner className="w-5 h-5" />
+                          ) : (
+                            <CheckIcon className="w-5 h-5" />
+                          )}
                         </button>
                         <button
                           onClick={() => setScoringGameId(null)}
@@ -592,9 +604,10 @@ export default function GamesPage() {
                 <button
                   type="submit"
                   disabled={gameSaving}
-                  className="px-6 py-2.5 rounded-xl bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
+                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
                 >
-                  {gameSaving ? "Saving…" : "Schedule Game"}
+                  {gameSaving && <SaveSpinner className="w-4 h-4" />}
+                  {gameSaving ? "Scheduling…" : "Schedule Game"}
                 </button>
               </div>
             </form>

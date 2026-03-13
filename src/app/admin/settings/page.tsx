@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import type { Tournament, TournamentStatus } from "@/lib/types/database";
 import { TournamentSelector } from "@/components/admin/TournamentSelector";
+import { RowSkeleton, SaveSpinner } from "@/components/admin/AdminLoading";
 import {
   EyeIcon,
   EyeSlashIcon,
@@ -73,6 +74,7 @@ export default function SettingsPage() {
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingKey, setSavingKey] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -107,6 +109,7 @@ export default function SettingsPage() {
   async function handleToggle(key: ToggleItem["key"]) {
     if (!tournament) return;
     setSaving(true);
+    setSavingKey(key);
     const newValue = !tournament[key];
     await fetch("/api/admin/tournaments", {
       method: "PATCH",
@@ -114,18 +117,21 @@ export default function SettingsPage() {
       body: JSON.stringify({ id: tournament.id, [key]: newValue }),
     });
     setTournament({ ...tournament, [key]: newValue });
+    setSavingKey(null);
     setSaving(false);
   }
 
   async function handleStatusChange(status: TournamentStatus) {
     if (!tournament) return;
     setSaving(true);
+    setSavingKey(`status-${status}`);
     await fetch("/api/admin/tournaments", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: tournament.id, status }),
     });
     setTournament({ ...tournament, status });
+    setSavingKey(null);
     setSaving(false);
   }
 
@@ -145,14 +151,7 @@ export default function SettingsPage() {
       />
 
       {loading || !tournament ? (
-        <div className="space-y-4">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div
-              key={i}
-              className="h-20 rounded-2xl bg-brand-surface animate-pulse"
-            />
-          ))}
-        </div>
+        <RowSkeleton count={3} height="h-20" />
       ) : (
         <div className="space-y-6">
           {/* Tournament Status */}
@@ -175,11 +174,16 @@ export default function SettingsPage() {
                       : "border-white/5 hover:border-white/10 hover:bg-white/[0.02]"
                   }`}
                 >
-                  <p
-                    className={`text-sm font-medium ${tournament.status === opt.value ? "text-brand-teal" : "text-white"}`}
-                  >
-                    {opt.label}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <p
+                      className={`text-sm font-medium ${tournament.status === opt.value ? "text-brand-teal" : "text-white"}`}
+                    >
+                      {opt.label}
+                    </p>
+                    {savingKey === `status-${opt.value}` && (
+                      <SaveSpinner className="w-3 h-3" />
+                    )}
+                  </div>
                   <p className="text-xs text-gray-500 mt-1">
                     {opt.description}
                   </p>
@@ -226,11 +230,17 @@ export default function SettingsPage() {
                         isOn ? "bg-brand-teal" : "bg-white/10"
                       }`}
                     >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          isOn ? "translate-x-6" : "translate-x-1"
-                        }`}
-                      />
+                      {savingKey === toggle.key ? (
+                        <span className="absolute inset-0 flex items-center justify-center">
+                          <SaveSpinner className="w-3 h-3" />
+                        </span>
+                      ) : (
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            isOn ? "translate-x-6" : "translate-x-1"
+                          }`}
+                        />
+                      )}
                     </button>
                   </div>
                 );

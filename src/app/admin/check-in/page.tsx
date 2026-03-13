@@ -14,6 +14,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { Select, SelectItem } from "@heroui/react";
 import { TournamentSelector } from "@/components/admin/TournamentSelector";
+import { RowSkeleton, SaveSpinner } from "@/components/admin/AdminLoading";
 
 const CHECK_IN_COLORS: Record<string, string> = {
   checked_in: "bg-emerald-400/10 text-emerald-400 border-emerald-400/20",
@@ -29,6 +30,7 @@ export default function CheckInPage() {
   );
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [actionRegId, setActionRegId] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -67,6 +69,7 @@ export default function CheckInPage() {
   }, [loadRegistrations]);
 
   async function setCheckIn(regId: string, status: CheckInStatus) {
+    setActionRegId(regId);
     const updates: Record<string, unknown> = { check_in_status: status };
     if (status === "checked_in") {
       updates.registration_status = "checked_in";
@@ -78,6 +81,7 @@ export default function CheckInPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: regId, ...updates }),
     });
+    setActionRegId(null);
     loadRegistrations();
   }
 
@@ -136,14 +140,7 @@ export default function CheckInPage() {
 
       {/* Check-in list */}
       {loading ? (
-        <div className="space-y-2">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div
-              key={i}
-              className="h-16 rounded-xl bg-brand-surface animate-pulse"
-            />
-          ))}
-        </div>
+        <RowSkeleton count={6} height="h-16" />
       ) : filtered.length === 0 ? (
         <div className="rounded-2xl bg-brand-surface border border-white/5 p-12 text-center">
           <p className="text-gray-400">
@@ -179,23 +176,32 @@ export default function CheckInPage() {
                   {status !== "checked_in" && (
                     <button
                       onClick={() => setCheckIn(reg.id, "checked_in")}
-                      className="text-xs px-3 py-1.5 rounded-lg bg-emerald-400/10 text-emerald-400 hover:bg-emerald-400/20 transition-colors font-medium"
+                      disabled={actionRegId === reg.id}
+                      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-emerald-400/10 text-emerald-400 hover:bg-emerald-400/20 transition-colors font-medium disabled:opacity-50"
                     >
+                      {actionRegId === reg.id && (
+                        <SaveSpinner className="w-3 h-3" />
+                      )}
                       Check In
                     </button>
                   )}
                   {status === "checked_in" && (
                     <button
                       onClick={() => setCheckIn(reg.id, "not_arrived")}
-                      className="text-xs px-3 py-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
+                      disabled={actionRegId === reg.id}
+                      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors disabled:opacity-50"
                     >
+                      {actionRegId === reg.id && (
+                        <SaveSpinner className="w-3 h-3" />
+                      )}
                       Undo
                     </button>
                   )}
                   {status !== "no_show" && (
                     <button
                       onClick={() => setCheckIn(reg.id, "no_show")}
-                      className="text-xs px-3 py-1.5 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-400/10 transition-colors"
+                      disabled={actionRegId === reg.id}
+                      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-400/10 transition-colors disabled:opacity-50"
                     >
                       No Show
                     </button>

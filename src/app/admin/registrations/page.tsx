@@ -15,6 +15,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { Select, SelectItem } from "@heroui/react";
 import { TournamentSelector } from "@/components/admin/TournamentSelector";
+import { TableSkeleton } from "@/components/admin/AdminLoading";
 
 const REG_STATUS_COLORS: Record<RegistrationStatus, string> = {
   pending: "bg-amber-400/10 text-amber-400",
@@ -161,32 +162,37 @@ export default function RegistrationsPage() {
         </div>
         <div className="flex items-center gap-2">
           <FunnelIcon className="w-4 h-4 text-gray-500" />
-          <select
-            className="px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-brand-teal/50"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+          <Select
+            aria-label="Filter by status"
+            variant="bordered"
+            selectedKeys={[statusFilter]}
+            onSelectionChange={(keys) =>
+              setStatusFilter(Array.from(keys)[0] as string)
+            }
+            className="w-44"
+            classNames={{
+              trigger:
+                "flex items-center bg-white/5 border-white/10 rounded-xl data-[focus=true]:border-brand-teal/50 data-[hover=true]:bg-white/8 h-[42px]",
+              value: "text-white text-sm",
+              popoverContent: "bg-brand-charcoal border border-white/10",
+              listbox: "text-white",
+              selectorIcon: "text-gray-400 mr-2",
+            }}
           >
-            <option value="all">All statuses</option>
-            <option value="pending">Pending</option>
-            <option value="confirmed">Confirmed</option>
-            <option value="waitlisted">Waitlisted</option>
-            <option value="cancelled">Cancelled</option>
-            <option value="checked_in">Checked In</option>
-            <option value="no_show">No Show</option>
-          </select>
+            <SelectItem key="all">All statuses</SelectItem>
+            <SelectItem key="pending">Pending</SelectItem>
+            <SelectItem key="confirmed">Confirmed</SelectItem>
+            <SelectItem key="waitlisted">Waitlisted</SelectItem>
+            <SelectItem key="cancelled">Cancelled</SelectItem>
+            <SelectItem key="checked_in">Checked In</SelectItem>
+            <SelectItem key="no_show">No Show</SelectItem>
+          </Select>
         </div>
       </div>
 
       {/* Table */}
       {loading ? (
-        <div className="space-y-2">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div
-              key={i}
-              className="h-14 rounded-xl bg-brand-surface animate-pulse"
-            />
-          ))}
-        </div>
+        <TableSkeleton rows={5} cols={6} />
       ) : filtered.length === 0 ? (
         <div className="rounded-2xl bg-brand-surface border border-white/5 p-12 text-center">
           <p className="text-gray-400">No registrations found</p>

@@ -15,6 +15,8 @@ import {
   EyeSlashIcon,
 } from "@heroicons/react/24/outline";
 import { TournamentSelector } from "@/components/admin/TournamentSelector";
+import { Select, SelectItem } from "@heroui/react";
+import { RowSkeleton, SaveSpinner } from "@/components/admin/AdminLoading";
 
 export default function AnnouncementsPage() {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
@@ -146,14 +148,7 @@ export default function AnnouncementsPage() {
       />
 
       {loading ? (
-        <div className="space-y-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div
-              key={i}
-              className="h-24 rounded-2xl bg-brand-surface animate-pulse"
-            />
-          ))}
-        </div>
+        <RowSkeleton count={3} height="h-24" />
       ) : announcements.length === 0 ? (
         <div className="rounded-2xl bg-brand-surface border border-white/5 p-12 text-center">
           <p className="text-gray-400">No announcements yet</p>
@@ -259,21 +254,30 @@ export default function AnnouncementsPage() {
               </div>
               <div>
                 <label className={labelCls}>Audience</label>
-                <select
-                  className={inputCls}
-                  value={form.audience}
-                  onChange={(e) =>
+                <Select
+                  aria-label="Audience"
+                  variant="bordered"
+                  selectedKeys={[form.audience]}
+                  onSelectionChange={(keys) =>
                     setForm({
                       ...form,
-                      audience: e.target.value as AnnouncementAudience,
+                      audience: Array.from(keys)[0] as AnnouncementAudience,
                     })
                   }
+                  classNames={{
+                    trigger:
+                      "flex items-center bg-white/5 border-white/10 rounded-xl data-[focus=true]:border-brand-teal/50 data-[hover=true]:bg-white/8 h-[42px]",
+                    value: "text-white text-sm",
+                    popoverContent: "bg-brand-charcoal border border-white/10",
+                    listbox: "text-white",
+                    selectorIcon: "text-gray-400 mr-2",
+                  }}
                 >
-                  <option value="all">Everyone</option>
-                  <option value="players">Players Only</option>
-                  <option value="coaches">Coaches Only</option>
-                  <option value="admins">Admins Only</option>
-                </select>
+                  <SelectItem key="all">Everyone</SelectItem>
+                  <SelectItem key="players">Players Only</SelectItem>
+                  <SelectItem key="coaches">Coaches Only</SelectItem>
+                  <SelectItem key="admins">Admins Only</SelectItem>
+                </Select>
               </div>
               <div className="flex justify-end gap-3 pt-2">
                 <button
@@ -286,8 +290,9 @@ export default function AnnouncementsPage() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-6 py-2.5 rounded-xl bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
+                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
                 >
+                  {saving && <SaveSpinner className="w-4 h-4" />}
                   {saving
                     ? "Saving…"
                     : editingId

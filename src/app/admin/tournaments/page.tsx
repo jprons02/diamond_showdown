@@ -10,6 +10,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { DatePicker } from "@heroui/date-picker";
 import { Select, SelectItem } from "@heroui/react";
+import { RowSkeleton, SaveSpinner } from "@/components/admin/AdminLoading";
 import {
   parseDate,
   parseDateTime,
@@ -264,14 +265,7 @@ export default function TournamentsPage() {
 
       {/* Tournament list */}
       {loading ? (
-        <div className="space-y-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div
-              key={i}
-              className="h-20 rounded-2xl bg-brand-surface animate-pulse"
-            />
-          ))}
-        </div>
+        <RowSkeleton count={3} height="h-20" />
       ) : tournaments.length === 0 ? (
         <div className="rounded-2xl bg-brand-surface border border-white/5 p-12 text-center">
           <p className="text-gray-400 mb-2">No tournaments yet</p>
@@ -613,8 +607,9 @@ export default function TournamentsPage() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-6 py-2.5 rounded-xl bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
+                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
                 >
+                  {saving && <SaveSpinner className="w-4 h-4" />}
                   {saving
                     ? "Saving…"
                     : editingId
