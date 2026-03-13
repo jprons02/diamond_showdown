@@ -14,7 +14,7 @@ export function TournamentSelector({
   tournaments,
   selectedId,
   onChange,
-  className = "w-64",
+  className = "w-full sm:w-64",
 }: TournamentSelectorProps) {
   return (
     <Select
