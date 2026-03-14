@@ -174,7 +174,7 @@ export default function RegistrationsPage() {
               value: "text-white text-sm",
               popoverContent: "bg-brand-charcoal border border-white/10",
               listbox: "text-white",
-              selectorIcon: "text-gray-400 mr-2",
+              selectorIcon: "text-gray-400 shrink-0",
             }}
           >
             <SelectItem key="all">All statuses</SelectItem>

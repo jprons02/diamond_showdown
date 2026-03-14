@@ -17,10 +17,22 @@ import {
   ArrowPathIcon,
   ClockIcon,
   TrashIcon,
+  TrophyIcon,
+  ExclamationTriangleIcon,
+  SparklesIcon,
+  EyeIcon,
+  EyeSlashIcon,
 } from "@heroicons/react/24/outline";
 
 const isDev = process.env.NODE_ENV === "development";
-import { Select, SelectItem } from "@heroui/react";
+import {
+  Select,
+  SelectItem,
+  Chip,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@heroui/react";
 import { TournamentSelector } from "@/components/admin/TournamentSelector";
 import { RowSkeleton, SaveSpinner } from "@/components/admin/AdminLoading";
 
@@ -48,6 +60,11 @@ export default function GamesPage() {
   const [scoreNotes, setScoreNotes] = useState("");
   const [scoreSaving, setScoreSaving] = useState(false);
   const [actionGameId, setActionGameId] = useState<string | null>(null);
+
+  // Bracket generation
+  const [bracketGenerating, setBracketGenerating] = useState(false);
+  const [bracketPopoverOpen, setBracketPopoverOpen] = useState(false);
+  const [bracketPublishing, setBracketPublishing] = useState(false);
 
   // New game form
   const [showNewGame, setShowNewGame] = useState(false);
@@ -165,6 +182,47 @@ export default function GamesPage() {
     loadGames();
   }
 
+  const selectedTournament =
+    tournaments.find((t) => t.id === selectedTournamentId) ?? null;
+  const bracketPublished = selectedTournament?.bracket_published ?? false;
+
+  async function handlePublishBracket() {
+    if (!selectedTournamentId) return;
+    setBracketPublishing(true);
+    await fetch("/api/admin/tournaments", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: selectedTournamentId,
+        bracket_published: !bracketPublished,
+      }),
+    });
+    // Refresh tournament list so bracketPublished reflects the new value
+    const res = await fetch("/api/admin/tournaments");
+    const list: Tournament[] = await res.json();
+    setTournaments(Array.isArray(list) ? list : []);
+    setBracketPublishing(false);
+  }
+
+  async function handleGenerateBracket() {
+    if (!selectedTournamentId || !allPoolGamesFinal) return;
+    if (
+      bracketExists &&
+      !confirm(
+        "Re-generating will delete all existing bracket and championship games. Continue?",
+      )
+    )
+      return;
+    setBracketGenerating(true);
+    await fetch("/api/admin/games/bracket", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tournament_id: selectedTournamentId }),
+    });
+    setBracketGenerating(false);
+    loadGames();
+  }
+
   // ─── Create Game ──────────────────────────────────────────
   async function handleCreateGame(e: React.FormEvent) {
     e.preventDefault();
@@ -198,6 +256,20 @@ export default function GamesPage() {
     loadGames();
   }
 
+  // Bracket helpers
+  const poolGames = games.filter((g) => g.game_type === "pool");
+  const pendingPoolGames = poolGames.filter(
+    (g) =>
+      g.status !== "final" &&
+      g.status !== "forfeit" &&
+      g.status !== "cancelled",
+  );
+  const allPoolGamesFinal =
+    poolGames.length > 0 && pendingPoolGames.length === 0;
+  const bracketExists = games.some(
+    (g) => g.game_type === "bracket" || g.game_type === "championship",
+  );
+
   // Filtered games
   const filtered = games.filter(
     (g) => statusFilter === "all" || g.status === statusFilter,
@@ -212,7 +284,7 @@ export default function GamesPage() {
     value: "text-white text-sm",
     popoverContent: "bg-brand-charcoal border border-white/10",
     listbox: "text-white",
-    selectorIcon: "text-gray-400 mr-2",
+    selectorIcon: "text-gray-400 shrink-0",
   };
 
   return (
@@ -233,13 +305,216 @@ export default function GamesPage() {
         </button>
       </div>
 
+      {/* ── Generate Bracket ───────────────────────────────────────── */}
+      {selectedTournamentId && (
+        <div
+          className={`rounded-2xl border p-5 transition-all duration-300 ${
+            allPoolGamesFinal
+              ? "bg-brand-teal/5 border-brand-teal/30"
+              : "bg-brand-surface border-white/5"
+          }`}
+        >
+          <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+            {/* Icon */}
+            <div
+              className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                allPoolGamesFinal ? "bg-gradient-brand" : "bg-white/5"
+              }`}
+            >
+              <TrophyIcon className="w-6 h-6 text-white" />
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-2 mb-1">
+                <h2 className="text-base font-bold text-white">
+                  Generate Bracket
+                </h2>
+                {bracketExists && !bracketPublished && (
+                  <Chip size="sm" color="success" variant="flat">
+                    Bracket Generated
+                  </Chip>
+                )}
+                {bracketExists && bracketPublished && (
+                  <Chip
+                    size="sm"
+                    color="success"
+                    variant="flat"
+                    startContent={<EyeIcon className="w-3 h-3" />}
+                  >
+                    Published
+                  </Chip>
+                )}
+                {allPoolGamesFinal && !bracketExists && (
+                  <Chip size="sm" color="primary" variant="flat">
+                    Ready
+                  </Chip>
+                )}
+              </div>
+
+              <p className="text-sm text-gray-400 mb-3">
+                {poolGames.length === 0
+                  ? "No pool games found. Add pool games first."
+                  : allPoolGamesFinal
+                    ? `All ${poolGames.length} pool games are final. Click to seed teams and build matchups.`
+                    : `${pendingPoolGames.length} of ${poolGames.length} pool game${
+                        poolGames.length !== 1 ? "s" : ""
+                      } still need final scores.`}
+              </p>
+
+              {/* Seeding methodology */}
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs text-gray-500">Seeding:</span>
+                <Chip
+                  size="sm"
+                  variant="flat"
+                  className="bg-white/5 text-gray-300"
+                >
+                  Win – Loss
+                </Chip>
+                <Chip
+                  size="sm"
+                  variant="flat"
+                  className="bg-white/5 text-gray-300"
+                >
+                  Run Differential
+                </Chip>
+                <Chip
+                  size="sm"
+                  variant="flat"
+                  className="bg-white/5 text-gray-300"
+                >
+                  Runs Scored
+                </Chip>
+                <Chip
+                  size="sm"
+                  variant="flat"
+                  startContent=<SparklesIcon className="w-3 h-3" />
+                  className="bg-amber-400/10 text-amber-400 border border-amber-400/20"
+                >
+                  Priority Seeding Rules: TBD
+                </Chip>
+              </div>
+            </div>
+
+            {/* Action buttons — stacked, vertically centered */}
+            <div className="shrink-0 self-center flex flex-col items-stretch gap-2">
+              {bracketExists && (
+                <button
+                  onClick={handlePublishBracket}
+                  disabled={bracketPublishing}
+                  className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all ${
+                    bracketPublished
+                      ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-400 hover:bg-emerald-400/20"
+                      : "border-white/10 bg-white/5 text-gray-400 hover:text-white hover:bg-white/10"
+                  }`}
+                >
+                  {bracketPublishing ? (
+                    <SaveSpinner className="w-4 h-4" />
+                  ) : bracketPublished ? (
+                    <EyeSlashIcon className="w-4 h-4" />
+                  ) : (
+                    <EyeIcon className="w-4 h-4" />
+                  )}
+                  {bracketPublished ? "Unpublish" : "Publish Bracket"}
+                </button>
+              )}
+
+              {/* Generate button — popover when pool play is incomplete */}
+              <div>
+                {allPoolGamesFinal ? (
+                  <button
+                    onClick={handleGenerateBracket}
+                    disabled={bracketGenerating}
+                    className="flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-brand text-white text-sm font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
+                  >
+                    {bracketGenerating ? (
+                      <SaveSpinner className="w-4 h-4" />
+                    ) : (
+                      <TrophyIcon className="w-4 h-4" />
+                    )}
+                    {bracketGenerating
+                      ? "Generating…"
+                      : bracketExists
+                        ? "Re-generate Bracket"
+                        : "Generate Bracket"}
+                  </button>
+                ) : (
+                  <Popover
+                    isOpen={bracketPopoverOpen}
+                    onOpenChange={setBracketPopoverOpen}
+                    placement="bottom-end"
+                    showArrow
+                  >
+                    <PopoverTrigger>
+                      <button
+                        onClick={() => setBracketPopoverOpen(true)}
+                        className="flex items-center gap-2 px-5 py-3 rounded-xl bg-white/5 text-gray-400 text-sm font-bold cursor-pointer hover:bg-white/8 transition-colors"
+                      >
+                        <TrophyIcon className="w-4 h-4" />
+                        Generate Bracket
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="bg-brand-charcoal border border-white/10 rounded-xl">
+                      <div className="p-4 max-w-sm">
+                        <p className="text-sm font-semibold text-white mb-1.5 flex items-center gap-2">
+                          <ExclamationTriangleIcon className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                          Pool play is not complete
+                        </p>
+                        <p className="text-xs text-gray-400 mb-3">
+                          All pool games must be marked as{" "}
+                          <span className="text-white font-medium">final</span>{" "}
+                          before the bracket can be generated.
+                          {pendingPoolGames.length > 0 &&
+                            ` ${pendingPoolGames.length} game${
+                              pendingPoolGames.length !== 1 ? "s" : ""
+                            } still need scores.`}
+                        </p>
+                        {pendingPoolGames.length > 0 && (
+                          <ul className="space-y-1.5">
+                            {pendingPoolGames.slice(0, 6).map((g) => (
+                              <li
+                                key={g.id}
+                                className="flex items-center gap-2 text-xs text-gray-400"
+                              >
+                                <span
+                                  className={`px-1.5 py-0.5 rounded-full flex-shrink-0 ${
+                                    GAME_STATUS_COLORS[g.status]
+                                  }`}
+                                >
+                                  {g.status.replace("_", " ")}
+                                </span>
+                                <span className="truncate">
+                                  {g.home_team?.name ?? "TBD"} vs{" "}
+                                  {g.away_team?.name ?? "TBD"}
+                                  {g.round_name ? ` · ${g.round_name}` : ""}
+                                </span>
+                              </li>
+                            ))}
+                            {pendingPoolGames.length > 6 && (
+                              <li className="text-xs text-gray-500">
+                                +{pendingPoolGames.length - 6} more
+                              </li>
+                            )}
+                          </ul>
+                        )}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                )}
+              </div>
+            </div>
+            {/* end action buttons wrapper */}
+          </div>
+        </div>
+      )}
+
       {/* Tournament selector + filter */}
       <div className="flex flex-col sm:flex-row gap-3 items-center">
         <TournamentSelector
           tournaments={tournaments}
           selectedId={selectedTournamentId}
           onChange={setSelectedTournamentId}
-          className="w-full sm:w-64"
         />
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <Select

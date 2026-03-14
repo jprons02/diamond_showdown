@@ -5,6 +5,7 @@ import {
   MapPinIcon,
   UserGroupIcon,
 } from "@heroicons/react/24/outline";
+import TournamentBreadcrumb from "./TournamentBreadcrumb";
 import type {
   Tournament,
   Team,
@@ -101,6 +102,9 @@ export default async function TournamentDetailPage({
       {/* Tournament Header */}
       <section className="pt-28 pb-8 sm:pt-36 sm:pb-10">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-10">
+            <TournamentBreadcrumb name={t.name} />
+          </div>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-4 tracking-tight">
             {t.name}
           </h1>
