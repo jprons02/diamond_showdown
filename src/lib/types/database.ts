@@ -20,6 +20,11 @@ export type RegistrationStatus =
 export type PaymentStatus = "unpaid" | "pending" | "paid" | "refunded";
 export type PaymentRecordStatus = "pending" | "paid" | "failed" | "refunded";
 export type GameType = "pool" | "bracket" | "championship" | "consolation";
+export type BracketFormat =
+  | "single_elimination"
+  | "double_elimination"
+  | "pool_to_bracket"
+  | "custom";
 export type GameStatus =
   | "scheduled"
   | "in_progress"
@@ -53,6 +58,7 @@ export type Tournament = {
   entry_fee: number | null;
   status: TournamentStatus;
   rules_text: string | null;
+  bracket_format: BracketFormat | null;
   standings_visible: boolean;
   bracket_published: boolean;
   scores_live: boolean;
