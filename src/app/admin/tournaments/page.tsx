@@ -1,7 +1,11 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import type { Tournament, TournamentStatus } from "@/lib/types/database";
+import type {
+  Tournament,
+  TournamentStatus,
+  BracketFormat,
+} from "@/lib/types/database";
 import {
   PlusIcon,
   PencilSquareIcon,
@@ -17,6 +21,13 @@ import {
   type CalendarDate,
   type CalendarDateTime,
 } from "@internationalized/date";
+
+const BRACKET_FORMAT_OPTIONS: { value: BracketFormat; label: string }[] = [
+  { value: "single_elimination", label: "Single Elimination" },
+  { value: "double_elimination", label: "Double Elimination" },
+  { value: "pool_to_bracket", label: "Pool Play → Bracket" },
+  { value: "custom", label: "Custom" },
+];
 
 const STATUS_OPTIONS: TournamentStatus[] = [
   "draft",
@@ -46,6 +57,7 @@ interface TournamentFormData {
   max_players: string;
   entry_fee: string;
   status: TournamentStatus;
+  bracket_format: BracketFormat | "";
   rules_text: string;
 }
 
@@ -62,6 +74,7 @@ const EMPTY_FORM: TournamentFormData = {
   max_players: "",
   entry_fee: "",
   status: "draft",
+  bracket_format: "",
   rules_text: "",
 };
 
@@ -135,6 +148,7 @@ export default function TournamentsPage() {
       max_players: t.max_players?.toString() ?? "",
       entry_fee: t.entry_fee?.toString() ?? "",
       status: t.status,
+      bracket_format: t.bracket_format ?? "",
       rules_text: t.rules_text ?? "",
     });
     setShowForm(true);
@@ -208,6 +222,7 @@ export default function TournamentsPage() {
       max_players: form.max_players ? parseInt(form.max_players) : null,
       entry_fee: form.entry_fee ? parseFloat(form.entry_fee) : null,
       status: form.status,
+      bracket_format: form.bracket_format || null,
       rules_text: form.rules_text || null,
     };
 
@@ -540,6 +555,38 @@ export default function TournamentsPage() {
                       selectorIcon: "text-gray-400",
                     }}
                   />
+                </div>
+                <div>
+                  <Select
+                    label="Bracket Format"
+                    labelPlacement="outside"
+                    variant="bordered"
+                    placeholder="Select format"
+                    selectedKeys={
+                      form.bracket_format ? [form.bracket_format] : []
+                    }
+                    onSelectionChange={(keys) =>
+                      setForm({
+                        ...form,
+                        bracket_format:
+                          (Array.from(keys)[0] as BracketFormat) ?? "",
+                      })
+                    }
+                    classNames={{
+                      base: "w-full",
+                      label: "text-xs font-medium !text-gray-400",
+                      trigger:
+                        "bg-white/5 border-white/10 rounded-xl data-[focus=true]:border-brand-teal/50 data-[hover=true]:bg-white/8 h-[42px]",
+                      value: "text-white text-sm",
+                      popoverContent:
+                        "bg-brand-charcoal border border-white/10",
+                      listbox: "text-white",
+                    }}
+                  >
+                    {BRACKET_FORMAT_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value}>{opt.label}</SelectItem>
+                    ))}
+                  </Select>
                 </div>
               </div>
 
