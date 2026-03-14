@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createServiceClient } from "@/lib/supabase/server";
 import {
@@ -126,6 +127,19 @@ export default async function TournamentDetailPage({
               </div>
             )}
           </div>
+
+          {/* Register CTA */}
+          {t.status === "open" && (
+            <p className="mt-5 text-sm text-gray-400">
+              Not registered yet?{" "}
+              <Link
+                href={`/register/${slug}`}
+                className="text-brand-teal hover:underline font-medium"
+              >
+                Sign up here →
+              </Link>
+            </p>
+          )}
         </div>
       </section>
 
