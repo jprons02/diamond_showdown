@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/server";
 import {
   CalendarDaysIcon,
   MapPinIcon,
@@ -11,6 +11,7 @@ import type {
   GameWithJoins,
   Announcement,
 } from "@/lib/types/database";
+import type { DraftPick } from "./tabs/DraftTab";
 import TournamentTabs from "./TournamentTabs";
 
 export async function generateMetadata({
@@ -19,7 +20,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const supabase = await createClient();
+  const supabase = createServiceClient();
   const { data } = await supabase
     .from("tournaments")
     .select("name")
@@ -47,7 +48,7 @@ export default async function TournamentDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const supabase = await createClient();
+  const supabase = createServiceClient();
 
   // Fetch tournament
   const { data: tournament } = await supabase
@@ -62,7 +63,7 @@ export default async function TournamentDetailPage({
   const t = tournament as Tournament;
 
   // Fetch related data in parallel
-  const [teamsRes, gamesRes, announcementsRes] = await Promise.all([
+  const [teamsRes, gamesRes, announcementsRes, draftRes] = await Promise.all([
     supabase
       .from("teams")
       .select("*")
@@ -80,11 +81,20 @@ export default async function TournamentDetailPage({
       .select("*")
       .eq("tournament_id", t.id)
       .order("published_at", { ascending: false }),
+    supabase
+      .from("team_players")
+      .select(
+        "id, team_id, draft_pick_number, is_captain, registration:registrations!registration_id(player:players!player_id(first_name, last_name, preferred_position))",
+      )
+      .eq("tournament_id", t.id)
+      .not("draft_pick_number", "is", null)
+      .order("draft_pick_number", { ascending: true }),
   ]);
 
   const teams = (teamsRes.data ?? []) as Team[];
   const games = (gamesRes.data ?? []) as GameWithJoins[];
   const announcements = (announcementsRes.data ?? []) as Announcement[];
+  const draftPicks = (draftRes.data ?? []) as unknown as DraftPick[];
 
   return (
     <div className="min-h-screen bg-gradient-dark">
@@ -122,6 +132,7 @@ export default async function TournamentDetailPage({
           teams={teams}
           games={games}
           announcements={announcements}
+          draftPicks={draftPicks}
         />
       </section>
     </div>

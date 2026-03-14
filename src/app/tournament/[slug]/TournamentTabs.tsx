@@ -16,7 +16,7 @@ import type {
   Announcement,
 } from "@/lib/types/database";
 import BracketTab from "./tabs/BracketTab";
-import DraftTab from "./tabs/DraftTab";
+import DraftTab, { type DraftPick } from "./tabs/DraftTab";
 import RulesTab from "./tabs/RulesTab";
 import AnnouncementsTab from "./tabs/AnnouncementsTab";
 import GamesTab from "./tabs/GamesTab";
@@ -26,6 +26,7 @@ interface TournamentTabsProps {
   teams: Team[];
   games: GameWithJoins[];
   announcements: Announcement[];
+  draftPicks: DraftPick[];
 }
 
 export default function TournamentTabs({
@@ -33,6 +34,7 @@ export default function TournamentTabs({
   teams,
   games,
   announcements,
+  draftPicks,
 }: TournamentTabsProps) {
   const [selected, setSelected] = useState("bracket");
 
@@ -78,7 +80,11 @@ export default function TournamentTabs({
             </div>
           }
         >
-          <DraftTab tournament={tournament} teams={teams} />
+          <DraftTab
+            tournament={tournament}
+            teams={teams}
+            draftPicks={draftPicks}
+          />
         </Tab>
 
         <Tab

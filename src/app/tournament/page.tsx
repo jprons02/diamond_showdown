@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/server";
 import { brand } from "@/lib/brand";
 import FloatingDiamonds from "@/components/FloatingDiamonds";
 import {
@@ -119,7 +119,7 @@ function TournamentCard({ tournament }: { tournament: Tournament }) {
 }
 
 export default async function TournamentListPage() {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
   const { data: tournaments } = await supabase
     .from("tournaments")
     .select("*")
