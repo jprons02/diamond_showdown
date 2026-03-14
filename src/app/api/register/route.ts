@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SquareClient, SquareEnvironment, SquareError } from "square";
 import { randomUUID } from "crypto";
+import { createServiceClient } from "@/lib/supabase/server";
 
 const client = new SquareClient({
   token: process.env.SQUARE_ACCESS_TOKEN,
@@ -10,13 +11,10 @@ const client = new SquareClient({
       : SquareEnvironment.Sandbox,
 });
 
-// Registration fee in cents — must match brand.tournament.freeAgentFee ($50.00)
-const REGISTRATION_FEE_CENTS = BigInt(5000);
-
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { playerData, paymentToken } = body as {
+    const { playerData, paymentToken, tournamentSlug } = body as {
       playerData: {
         firstName: string;
         lastName: string;
@@ -28,6 +26,7 @@ export async function POST(req: NextRequest) {
         notes: string;
       };
       paymentToken: string;
+      tournamentSlug: string;
     };
 
     if (!paymentToken) {
@@ -40,6 +39,13 @@ export async function POST(req: NextRequest) {
     if (!playerData?.firstName || !playerData?.email) {
       return NextResponse.json(
         { error: "Player data is incomplete." },
+        { status: 400 },
+      );
+    }
+
+    if (!tournamentSlug) {
+      return NextResponse.json(
+        { error: "Tournament is required." },
         { status: 400 },
       );
     }
@@ -62,36 +68,169 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Charge the card via Square Payments API
-    const response = await client.payments.create({
-      sourceId: paymentToken,
-      idempotencyKey: randomUUID(),
-      amountMoney: {
-        amount: REGISTRATION_FEE_CENTS,
-        currency: "USD",
-      },
-      buyerEmailAddress: playerData.email,
-      note: `Diamond Showdown Registration — ${playerData.firstName} ${playerData.lastName}`,
-    });
+    const supabase = createServiceClient();
+    const email = playerData.email.toLowerCase().trim();
 
-    const payment = response.payment;
+    // ── 1. Look up tournament ──────────────────────────────────
+    const { data: tournament, error: tournamentError } = await supabase
+      .from("tournaments")
+      .select("id, entry_fee, status")
+      .eq("slug", tournamentSlug)
+      .single();
 
-    // Validate payment completed successfully
-    if (payment?.status !== "COMPLETED") {
+    if (tournamentError || !tournament) {
       return NextResponse.json(
-        { error: "Payment did not complete. Please try again." },
-        { status: 402 },
+        { error: "Tournament not found." },
+        { status: 404 },
       );
     }
 
-    // TODO: Persist registration + payment confirmation to your database
-    // TODO: Send confirmation email to playerData.email
-    console.log("Registration complete:", {
-      paymentId: payment.id,
-      receiptUrl: payment.receiptUrl,
-      player: `${playerData.firstName} ${playerData.lastName}`,
-      email: playerData.email,
+    if (tournament.status !== "open") {
+      return NextResponse.json(
+        { error: "Registration is not currently open for this tournament." },
+        { status: 400 },
+      );
+    }
+
+    // ── 2. Duplicate-registration check (before charging) ──────
+    const { data: existingPlayer } = await supabase
+      .from("players")
+      .select("id")
+      .eq("email", email)
+      .single();
+
+    if (existingPlayer) {
+      const { data: existingReg } = await supabase
+        .from("registrations")
+        .select("id")
+        .eq("tournament_id", tournament.id)
+        .eq("player_id", existingPlayer.id)
+        .not("registration_status", "in", '("cancelled","refunded")')
+        .single();
+
+      if (existingReg) {
+        return NextResponse.json(
+          { error: "This email is already registered for this tournament." },
+          { status: 409 },
+        );
+      }
+    }
+
+    // ── 3. Charge the card via Square ──────────────────────────
+    const entryFee = tournament.entry_fee ?? 50;
+
+    const isTestBypass =
+      paymentToken === "TEST_TOKEN_BYPASS" &&
+      process.env.NODE_ENV !== "production";
+
+    let payment: { id?: string; receiptUrl?: string; status?: string };
+
+    if (isTestBypass) {
+      // Dev/test mode — skip Square entirely
+      payment = {
+        id: `TEST_${randomUUID()}`,
+        receiptUrl: undefined,
+        status: "COMPLETED",
+      };
+    } else {
+      const feeCents = BigInt(Math.round(entryFee * 100));
+
+      const response = await client.payments.create({
+        sourceId: paymentToken,
+        idempotencyKey: randomUUID(),
+        amountMoney: {
+          amount: feeCents,
+          currency: "USD",
+        },
+        buyerEmailAddress: email,
+        note: `Diamond Showdown Registration — ${playerData.firstName} ${playerData.lastName}`,
+      });
+
+      payment = response.payment ?? {};
+
+      if (payment?.status !== "COMPLETED") {
+        return NextResponse.json(
+          { error: "Payment did not complete. Please try again." },
+          { status: 402 },
+        );
+      }
+    }
+
+    // ── 4. Upsert player record ────────────────────────────────
+    const { data: player, error: playerError } = await supabase
+      .from("players")
+      .upsert(
+        {
+          first_name: playerData.firstName.trim(),
+          last_name: playerData.lastName.trim(),
+          email,
+          phone: playerData.phone.trim() || null,
+          preferred_position: `${position1}, ${position2}, ${position3}`,
+          notes: playerData.notes.trim() || null,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "email" },
+      )
+      .select("id")
+      .single();
+
+    if (playerError || !player) {
+      console.error("Failed to upsert player:", playerError);
+      return NextResponse.json(
+        {
+          error:
+            "Failed to save player record. Your payment was processed — please contact support.",
+          paymentId: payment.id,
+        },
+        { status: 500 },
+      );
+    }
+
+    // ── 5. Create registration ─────────────────────────────────
+    const { data: registration, error: regError } = await supabase
+      .from("registrations")
+      .insert({
+        tournament_id: tournament.id,
+        player_id: player.id,
+        registration_status: "confirmed",
+        payment_status: "paid",
+        paid_amount: isTestBypass ? 0 : entryFee,
+        draft_eligible: true,
+      })
+      .select("id")
+      .single();
+
+    if (regError || !registration) {
+      console.error("Failed to create registration:", regError);
+      return NextResponse.json(
+        {
+          error:
+            "Failed to create registration. Your payment was processed — please contact support.",
+          paymentId: payment.id,
+        },
+        { status: 500 },
+      );
+    }
+
+    // ── 6. Create payment record ───────────────────────────────
+    const { error: paymentDbError } = await supabase.from("payments").insert({
+      registration_id: registration.id,
+      provider: "square",
+      provider_payment_intent_id: payment.id,
+      amount: entryFee,
+      currency: "USD",
+      status: "paid",
+      paid_at: new Date().toISOString(),
+      raw_payload_json: {
+        squarePaymentId: payment.id,
+        receiptUrl: payment.receiptUrl,
+      },
     });
+
+    if (paymentDbError) {
+      // Non-fatal — registration is already saved
+      console.error("Failed to record payment in DB:", paymentDbError);
+    }
 
     return NextResponse.json({
       success: true,

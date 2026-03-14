@@ -15,6 +15,7 @@ import {
   Button,
 } from "@heroui/react";
 import { brand } from "@/lib/brand";
+import TournamentPickerDialog from "@/components/TournamentPickerDialog";
 
 const navItems = [
   { label: "Home", href: "/" },
@@ -25,6 +26,7 @@ const navItems = [
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
   const pathname = usePathname();
 
   return (
@@ -102,12 +104,11 @@ export default function Navbar() {
         </NavbarItem>
         <NavbarItem>
           <Button
-            as={Link}
-            href="/register"
             color="primary"
             variant="shadow"
             size="sm"
             className="font-semibold bg-gradient-brand text-white"
+            onPress={() => setIsPickerOpen(true)}
           >
             Register Now
           </Button>
@@ -139,17 +140,23 @@ export default function Navbar() {
         })}
         <NavbarMenuItem>
           <Button
-            as={Link}
-            href="/register"
-            onClick={() => setIsMenuOpen(false)}
             color="primary"
             variant="shadow"
             className="w-full mt-4 font-semibold bg-gradient-brand text-white"
+            onPress={() => {
+              setIsMenuOpen(false);
+              setIsPickerOpen(true);
+            }}
           >
             Register Now
           </Button>
         </NavbarMenuItem>
       </NavbarMenu>
+
+      <TournamentPickerDialog
+        isOpen={isPickerOpen}
+        onClose={() => setIsPickerOpen(false)}
+      />
     </HeroNavbar>
   );
 }
