@@ -38,7 +38,6 @@ const POS_ABBR: Record<string, string> = {
   "Left Center Field": "LCF",
   "Right Center Field": "RCF",
   "Right Field": "RF",
-  Utility: "UTIL",
 };
 
 function abbrPos(pos: string | null | undefined): string | null {

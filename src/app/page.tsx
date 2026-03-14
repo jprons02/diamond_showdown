@@ -4,6 +4,7 @@ import { brand } from "@/lib/brand";
 import HeroBackground from "@/components/HeroBackground";
 import FloatingDiamonds from "@/components/FloatingDiamonds";
 import StatsBar from "@/components/StatsBar";
+import RegisterButton from "@/components/RegisterButton";
 import {
   CalendarDaysIcon,
   MapPinIcon,
@@ -83,13 +84,10 @@ export default function HomePage() {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up-delay-2">
-              <Link
-                href="/register"
-                className="group inline-flex items-center justify-center px-8 py-4 text-base font-bold text-white bg-gradient-brand rounded-xl shadow-lg shadow-brand-teal/30 hover:shadow-brand-teal/50 hover:scale-105 transition-all duration-300 w-full sm:w-auto glow-teal"
-              >
+              <RegisterButton className="group inline-flex items-center justify-center px-8 py-4 text-base font-bold text-white bg-gradient-brand rounded-xl shadow-lg shadow-brand-teal/30 hover:shadow-brand-teal/50 hover:scale-105 transition-all duration-300 w-full sm:w-auto glow-teal">
                 <FireIcon className="w-5 h-5 mr-2 group-hover:animate-bounce" />
                 Register Now
-              </Link>
+              </RegisterButton>
               <Link
                 href="/about"
                 className="inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-white bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl hover:bg-white/20 hover:border-white/30 transition-all duration-300 w-full sm:w-auto"
@@ -271,12 +269,9 @@ export default function HomePage() {
                 {brand.tournament.freeAgentFee} and get drafted onto a team.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Link
-                  href="/register"
-                  className="group inline-flex items-center justify-center px-8 py-4 text-base font-bold text-white bg-gradient-brand rounded-xl shadow-lg shadow-brand-teal/30 hover:shadow-brand-teal/50 hover:scale-105 transition-all duration-300 w-full sm:w-auto animate-pulse-glow"
-                >
+                <RegisterButton className="group inline-flex items-center justify-center px-8 py-4 text-base font-bold text-white bg-gradient-brand rounded-xl shadow-lg shadow-brand-teal/30 hover:shadow-brand-teal/50 hover:scale-105 transition-all duration-300 w-full sm:w-auto animate-pulse-glow">
                   Register Now
-                </Link>
+                </RegisterButton>
                 <Link
                   href="/rules"
                   className="inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-white bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl hover:bg-white/20 transition-all duration-300 w-full sm:w-auto"
