@@ -2,6 +2,12 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { brand } from "@/lib/brand";
 import { SwatchIcon } from "@heroicons/react/24/outline";
+import {
+  ButtonShowcase,
+  SampleFormShowcase,
+  CardShowcase,
+  SpinnerShowcase,
+} from "./HeroUIShowcase";
 
 export const metadata: Metadata = {
   title: "Brand Style Guide",
@@ -307,71 +313,30 @@ export default function BrandPage() {
           <SectionHeader
             number="05"
             title="UI Components"
-            description="Key interactive elements and their styling conventions."
+            description="Key interactive elements built with HeroUI — our component library for consistent, accessible UI."
           />
           <div className="space-y-6">
             {/* Buttons */}
             <div className="p-6 rounded-2xl bg-brand-surface/50 border border-white/5">
-              <p className="text-sm font-semibold text-white mb-6">Buttons</p>
-              <div className="flex flex-wrap gap-4 items-center">
-                <button className="inline-flex items-center justify-center px-6 py-3 text-sm font-semibold text-white bg-gradient-brand rounded-xl shadow-lg shadow-brand-teal/25 hover:shadow-brand-teal/40 hover:scale-105 transition-all duration-300">
-                  Primary Button
-                </button>
-                <button className="inline-flex items-center justify-center px-6 py-3 text-sm font-semibold text-gray-300 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 hover:text-white transition-all duration-300">
-                  Secondary Button
-                </button>
-                <button className="inline-flex items-center justify-center px-6 py-3 text-sm font-semibold text-brand-teal hover:text-brand-teal-light transition-colors">
-                  Ghost Button
-                </button>
-              </div>
+              <ButtonShowcase />
             </div>
 
             {/* Cards */}
             <div className="p-6 rounded-2xl bg-brand-surface/50 border border-white/5">
-              <p className="text-sm font-semibold text-white mb-6">Cards</p>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="p-6 rounded-2xl bg-brand-surface/50 border border-white/5">
-                  <p className="text-sm font-medium text-white">Default Card</p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    bg-brand-surface/50 + border-white/5
-                  </p>
-                </div>
-                <div className="p-6 rounded-2xl bg-brand-surface border border-white/5 glow-teal">
-                  <p className="text-sm font-medium text-white">Glow Card</p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    + glow-teal shadow
-                  </p>
-                </div>
-                <div className="p-6 rounded-2xl bg-brand-surface/50 border border-brand-teal/30">
-                  <p className="text-sm font-medium text-white">
-                    Accent Border
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    border-brand-teal/30
-                  </p>
-                </div>
-              </div>
+              <CardShowcase />
             </div>
 
-            {/* Form Inputs */}
+            {/* Sample Form */}
             <div className="p-6 rounded-2xl bg-brand-surface/50 border border-white/5">
               <p className="text-sm font-semibold text-white mb-6">
-                Form Inputs
+                Sample Form
               </p>
-              <div className="max-w-sm space-y-4">
-                <input
-                  type="text"
-                  defaultValue="Filled input"
-                  readOnly
-                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-brand-teal/50 focus:ring-1 focus:ring-brand-teal/50 transition-colors"
-                />
-                <input
-                  type="text"
-                  placeholder="Placeholder text"
-                  readOnly
-                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-brand-teal/50 focus:ring-1 focus:ring-brand-teal/50 transition-colors"
-                />
-              </div>
+              <SampleFormShowcase />
+            </div>
+
+            {/* Spinners & Chips */}
+            <div className="p-6 rounded-2xl bg-brand-surface/50 border border-white/5">
+              <SpinnerShowcase />
             </div>
           </div>
         </section>

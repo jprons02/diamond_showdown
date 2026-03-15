@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import type { Tournament, TournamentStatus } from "@/lib/types/database";
 import { TournamentSelector } from "@/components/admin/TournamentSelector";
 import { RowSkeleton, SaveSpinner } from "@/components/admin/AdminLoading";
+import { Button, Switch } from "@heroui/react";
 import {
   EyeIcon,
   EyeSlashIcon,
@@ -164,30 +165,28 @@ export default function SettingsPage() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {STATUS_OPTIONS.map((opt) => (
-                <button
+                <Button
                   key={opt.value}
-                  onClick={() => handleStatusChange(opt.value)}
-                  disabled={saving}
-                  className={`text-left p-4 rounded-xl border transition-all ${
-                    tournament.status === opt.value
-                      ? "border-brand-teal/50 bg-brand-teal/5"
-                      : "border-white/5 hover:border-white/10 hover:bg-white/[0.02]"
-                  }`}
+                  variant={
+                    tournament.status === opt.value ? "flat" : "bordered"
+                  }
+                  color={
+                    tournament.status === opt.value ? "primary" : "default"
+                  }
+                  onPress={() => handleStatusChange(opt.value)}
+                  isDisabled={saving}
+                  className="h-auto p-4 flex-col items-start text-left"
                 >
                   <div className="flex items-center gap-2">
-                    <p
-                      className={`text-sm font-medium ${tournament.status === opt.value ? "text-brand-teal" : "text-white"}`}
-                    >
-                      {opt.label}
-                    </p>
+                    <p className="text-sm font-medium">{opt.label}</p>
                     {savingKey === `status-${opt.value}` && (
                       <SaveSpinner className="w-3 h-3" />
                     )}
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 mt-1 whitespace-normal">
                     {opt.description}
                   </p>
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -223,25 +222,13 @@ export default function SettingsPage() {
                         </p>
                       </div>
                     </div>
-                    <button
-                      onClick={() => handleToggle(toggle.key)}
-                      disabled={saving}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0 ${
-                        isOn ? "bg-brand-teal" : "bg-white/10"
-                      }`}
-                    >
-                      {savingKey === toggle.key ? (
-                        <span className="absolute inset-0 flex items-center justify-center">
-                          <SaveSpinner className="w-3 h-3" />
-                        </span>
-                      ) : (
-                        <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                            isOn ? "translate-x-6" : "translate-x-1"
-                          }`}
-                        />
-                      )}
-                    </button>
+                    <Switch
+                      isSelected={isOn}
+                      isDisabled={saving}
+                      onValueChange={() => handleToggle(toggle.key)}
+                      size="sm"
+                      color="success"
+                    />
                   </div>
                 );
               })}

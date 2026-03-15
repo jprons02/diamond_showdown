@@ -8,6 +8,7 @@ import {
   ModalHeader,
   ModalBody,
   Spinner,
+  Button,
 } from "@heroui/react";
 import {
   CalendarDaysIcon,
@@ -110,12 +111,14 @@ export default function TournamentPickerDialog({
           ) : (
             <div className="space-y-3">
               {tournaments.map((t) => (
-                <button
+                <Button
                   key={t.id}
-                  onClick={() => handleSelect(t.slug)}
-                  className="group w-full text-left rounded-xl border border-white/5 bg-white/[0.02] p-4 sm:p-5 transition-all duration-300 hover:border-brand-teal/30 hover:bg-brand-teal/5"
+                  variant="bordered"
+                  fullWidth
+                  className="group h-auto text-left rounded-xl border-white/5 bg-white/[0.02] p-4 sm:p-5 justify-start hover:border-brand-teal/30 hover:bg-brand-teal/5"
+                  onPress={() => handleSelect(t.slug)}
                 >
-                  <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center justify-between gap-3 w-full">
                     <div className="min-w-0 flex-1">
                       <h3 className="text-base font-semibold text-white group-hover:text-brand-teal transition-colors truncate">
                         {t.name}
@@ -139,7 +142,7 @@ export default function TournamentPickerDialog({
                     </div>
                     <ChevronRightIcon className="w-5 h-5 text-gray-600 group-hover:text-brand-teal group-hover:translate-x-0.5 transition-all flex-shrink-0" />
                   </div>
-                </button>
+                </Button>
               ))}
             </div>
           )}

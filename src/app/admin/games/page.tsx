@@ -32,9 +32,22 @@ import {
   Popover,
   PopoverTrigger,
   PopoverContent,
+  Button,
+  Input,
 } from "@heroui/react";
+import { DatePicker } from "@heroui/date-picker";
+import { parseDateTime, type CalendarDateTime } from "@internationalized/date";
 import { TournamentSelector } from "@/components/admin/TournamentSelector";
 import { RowSkeleton, SaveSpinner } from "@/components/admin/AdminLoading";
+
+function toCalendarDateTime(str: string): CalendarDateTime | null {
+  if (!str) return null;
+  try {
+    return parseDateTime(str.length === 16 ? str + ":00" : str);
+  } catch {
+    return null;
+  }
+}
 
 const GAME_STATUS_COLORS: Record<GameStatus, string> = {
   scheduled: "bg-white/5 text-gray-400",
@@ -275,18 +288,6 @@ export default function GamesPage() {
     (g) => statusFilter === "all" || g.status === statusFilter,
   );
 
-  const inputCls =
-    "w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-brand-teal/50 focus:ring-1 focus:ring-brand-teal/50 transition-colors";
-  const labelCls = "block text-xs font-medium text-gray-400 mb-1.5";
-  const selectCls = {
-    trigger:
-      "flex items-center bg-white/5 border-white/10 rounded-xl data-[focus=true]:border-brand-teal/50 data-[hover=true]:bg-white/8 h-[42px]",
-    value: "text-white text-sm",
-    popoverContent: "bg-brand-charcoal border border-white/10",
-    listbox: "text-white",
-    selectorIcon: "text-gray-400 shrink-0",
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -296,13 +297,13 @@ export default function GamesPage() {
             Schedule games and enter scores
           </p>
         </div>
-        <button
-          onClick={() => setShowNewGame(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+        <Button
+          color="primary"
+          onPress={() => setShowNewGame(true)}
+          startContent={<PlusIcon className="w-4 h-4" />}
         >
-          <PlusIcon className="w-4 h-4" />
           New Game
-        </button>
+        </Button>
       </div>
 
       {/* ── Generate Bracket ───────────────────────────────────────── */}
@@ -398,47 +399,51 @@ export default function GamesPage() {
             </div>
 
             {/* Action buttons — stacked, vertically centered */}
-            <div className="shrink-0 self-center flex flex-col items-stretch gap-2">
+            <div className="shrink-0 self-start sm:self-center flex flex-col items-stretch gap-2">
               {bracketExists && (
-                <button
-                  onClick={handlePublishBracket}
-                  disabled={bracketPublishing}
-                  className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all ${
+                <Button
+                  variant="bordered"
+                  isLoading={bracketPublishing}
+                  onPress={handlePublishBracket}
+                  startContent={
+                    !bracketPublishing ? (
+                      bracketPublished ? (
+                        <EyeSlashIcon className="w-4 h-4" />
+                      ) : (
+                        <EyeIcon className="w-4 h-4" />
+                      )
+                    ) : undefined
+                  }
+                  className={
                     bracketPublished
-                      ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-400 hover:bg-emerald-400/20"
-                      : "border-white/10 bg-white/5 text-gray-400 hover:text-white hover:bg-white/10"
-                  }`}
+                      ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-400"
+                      : ""
+                  }
                 >
-                  {bracketPublishing ? (
-                    <SaveSpinner className="w-4 h-4" />
-                  ) : bracketPublished ? (
-                    <EyeSlashIcon className="w-4 h-4" />
-                  ) : (
-                    <EyeIcon className="w-4 h-4" />
-                  )}
                   {bracketPublished ? "Unpublish" : "Publish Bracket"}
-                </button>
+                </Button>
               )}
 
               {/* Generate button — popover when pool play is incomplete */}
               <div>
                 {allPoolGamesFinal ? (
-                  <button
-                    onClick={handleGenerateBracket}
-                    disabled={bracketGenerating}
-                    className="flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-brand text-white text-sm font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
+                  <Button
+                    color="primary"
+                    isLoading={bracketGenerating}
+                    onPress={handleGenerateBracket}
+                    startContent={
+                      !bracketGenerating ? (
+                        <TrophyIcon className="w-4 h-4" />
+                      ) : undefined
+                    }
+                    className="font-bold"
                   >
-                    {bracketGenerating ? (
-                      <SaveSpinner className="w-4 h-4" />
-                    ) : (
-                      <TrophyIcon className="w-4 h-4" />
-                    )}
                     {bracketGenerating
                       ? "Generating…"
                       : bracketExists
                         ? "Re-generate Bracket"
                         : "Generate Bracket"}
-                  </button>
+                  </Button>
                 ) : (
                   <Popover
                     isOpen={bracketPopoverOpen}
@@ -447,13 +452,14 @@ export default function GamesPage() {
                     showArrow
                   >
                     <PopoverTrigger>
-                      <button
-                        onClick={() => setBracketPopoverOpen(true)}
-                        className="flex items-center gap-2 px-5 py-3 rounded-xl bg-white/5 text-gray-400 text-sm font-bold cursor-pointer hover:bg-white/8 transition-colors"
+                      <Button
+                        variant="flat"
+                        onPress={() => setBracketPopoverOpen(true)}
+                        startContent={<TrophyIcon className="w-4 h-4" />}
+                        className="font-bold"
                       >
-                        <TrophyIcon className="w-4 h-4" />
                         Generate Bracket
-                      </button>
+                      </Button>
                     </PopoverTrigger>
                     <PopoverContent className="bg-brand-charcoal border border-white/10 rounded-xl">
                       <div className="p-4 max-w-sm">
@@ -518,14 +524,12 @@ export default function GamesPage() {
         />
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <Select
-            aria-label="Filter by status"
             variant="bordered"
             selectedKeys={[statusFilter]}
             onSelectionChange={(keys) =>
               setStatusFilter(Array.from(keys)[0] as string)
             }
-            className="w-full sm:w-44"
-            classNames={selectCls}
+            className="w-48"
           >
             <SelectItem key="all">All statuses</SelectItem>
             <SelectItem key="scheduled">Scheduled</SelectItem>
@@ -613,49 +617,53 @@ export default function GamesPage() {
                   {/* Actions */}
                   <div className="flex items-center gap-2 shrink-0">
                     {game.status === "scheduled" && (
-                      <button
-                        onClick={() => updateGameStatus(game.id, "in_progress")}
-                        disabled={actionGameId === game.id}
-                        className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-amber-400/10 text-amber-400 hover:bg-amber-400/20 transition-colors disabled:opacity-50"
+                      <Button
+                        size="sm"
+                        variant="flat"
+                        color="warning"
+                        isLoading={actionGameId === game.id}
+                        onPress={() => updateGameStatus(game.id, "in_progress")}
                       >
-                        {actionGameId === game.id ? (
-                          <SaveSpinner className="w-3 h-3" />
-                        ) : null}
                         Start Game
-                      </button>
+                      </Button>
                     )}
                     {(game.status === "in_progress" ||
                       game.status === "scheduled") && (
-                      <button
-                        onClick={() => openScoreEntry(game)}
-                        className="text-xs px-3 py-1.5 rounded-lg bg-gradient-brand text-white font-semibold hover:opacity-90 transition-opacity"
+                      <Button
+                        size="sm"
+                        color="primary"
+                        onPress={() => openScoreEntry(game)}
                       >
                         Enter Score
-                      </button>
+                      </Button>
                     )}
                     {game.status === "final" && (
-                      <button
-                        onClick={() => reopenGame(game.id)}
-                        disabled={actionGameId === game.id}
-                        className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors disabled:opacity-50"
+                      <Button
+                        size="sm"
+                        variant="light"
+                        isLoading={actionGameId === game.id}
+                        onPress={() => reopenGame(game.id)}
+                        startContent={
+                          actionGameId !== game.id ? (
+                            <ArrowPathIcon className="w-3 h-3" />
+                          ) : undefined
+                        }
                       >
-                        {actionGameId === game.id ? (
-                          <SaveSpinner className="w-3 h-3" />
-                        ) : (
-                          <ArrowPathIcon className="w-3 h-3" />
-                        )}
                         Reopen
-                      </button>
+                      </Button>
                     )}
                     {isDev && (
-                      <button
-                        onClick={() => deleteGame(game.id)}
-                        disabled={actionGameId === game.id}
-                        className="p-2 rounded-lg hover:bg-red-500/10 text-gray-400 hover:text-red-400 transition-colors disabled:opacity-50"
+                      <Button
+                        isIconOnly
+                        size="sm"
+                        variant="light"
+                        color="danger"
+                        isDisabled={actionGameId === game.id}
+                        onPress={() => deleteGame(game.id)}
                         title="Delete game (dev only)"
                       >
                         <TrashIcon className="w-4 h-4" />
-                      </button>
+                      </Button>
                     )}
                   </div>
                 </div>
@@ -664,58 +672,53 @@ export default function GamesPage() {
                 {isScoring && (
                   <div className="mt-4 pt-4 border-t border-white/5">
                     <div className="flex flex-col sm:flex-row items-end gap-3">
-                      <div className="flex-1 w-full sm:w-auto">
-                        <label className={labelCls}>
-                          {game.home_team?.name ?? "Home"} Score
-                        </label>
-                        <input
-                          type="number"
-                          min="0"
-                          className={inputCls}
-                          value={scoreHome}
-                          onChange={(e) => setScoreHome(e.target.value)}
-                          autoFocus
-                        />
-                      </div>
-                      <div className="flex-1 w-full sm:w-auto">
-                        <label className={labelCls}>
-                          {game.away_team?.name ?? "Away"} Score
-                        </label>
-                        <input
-                          type="number"
-                          min="0"
-                          className={inputCls}
-                          value={scoreAway}
-                          onChange={(e) => setScoreAway(e.target.value)}
-                        />
-                      </div>
-                      <div className="flex-1 w-full sm:w-auto">
-                        <label className={labelCls}>Notes (optional)</label>
-                        <input
-                          className={inputCls}
-                          value={scoreNotes}
-                          onChange={(e) => setScoreNotes(e.target.value)}
-                          placeholder="Correction reason, etc."
-                        />
-                      </div>
+                      <Input
+                        label={`${game.home_team?.name ?? "Home"} Score`}
+                        labelPlacement="outside"
+                        variant="bordered"
+                        type="number"
+                        min={0}
+                        value={scoreHome}
+                        onValueChange={setScoreHome}
+                        autoFocus
+                        className="flex-1 w-full sm:w-auto"
+                      />
+                      <Input
+                        label={`${game.away_team?.name ?? "Away"} Score`}
+                        labelPlacement="outside"
+                        variant="bordered"
+                        type="number"
+                        min={0}
+                        value={scoreAway}
+                        onValueChange={setScoreAway}
+                        className="flex-1 w-full sm:w-auto"
+                      />
+                      <Input
+                        label="Notes (optional)"
+                        labelPlacement="outside"
+                        variant="bordered"
+                        value={scoreNotes}
+                        onValueChange={setScoreNotes}
+                        placeholder="Correction reason, etc."
+                        className="flex-1 w-full sm:w-auto"
+                      />
                       <div className="flex gap-2">
-                        <button
-                          onClick={submitScore}
-                          disabled={scoreSaving || !scoreHome || !scoreAway}
-                          className="flex items-center justify-center p-2.5 rounded-xl bg-gradient-brand text-white hover:opacity-90 transition-opacity disabled:opacity-50"
+                        <Button
+                          isIconOnly
+                          color="primary"
+                          isLoading={scoreSaving}
+                          isDisabled={!scoreHome || !scoreAway}
+                          onPress={submitScore}
                         >
-                          {scoreSaving ? (
-                            <SaveSpinner className="w-5 h-5" />
-                          ) : (
-                            <CheckIcon className="w-5 h-5" />
-                          )}
-                        </button>
-                        <button
-                          onClick={() => setScoringGameId(null)}
-                          className="p-2.5 rounded-xl border border-white/10 text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
+                          <CheckIcon className="w-5 h-5" />
+                        </Button>
+                        <Button
+                          isIconOnly
+                          variant="bordered"
+                          onPress={() => setScoringGameId(null)}
                         >
                           <XMarkIcon className="w-5 h-5" />
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -738,20 +741,20 @@ export default function GamesPage() {
               <h2 className="text-lg font-semibold text-white">
                 Schedule New Game
               </h2>
-              <button
-                onClick={() => setShowNewGame(false)}
-                className="text-gray-400 hover:text-white"
+              <Button
+                isIconOnly
+                variant="light"
+                onPress={() => setShowNewGame(false)}
               >
                 <XMarkIcon className="w-5 h-5" />
-              </button>
+              </Button>
             </div>
 
-            <form onSubmit={handleCreateGame} className="space-y-4">
+            <form onSubmit={handleCreateGame} className="flex flex-col gap-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Select
                     label="Game Type"
-                    labelPlacement="outside"
                     variant="bordered"
                     selectedKeys={[newGame.game_type]}
                     onSelectionChange={(keys) =>
@@ -760,7 +763,6 @@ export default function GamesPage() {
                         game_type: Array.from(keys)[0] as GameType,
                       })
                     }
-                    classNames={selectCls}
                   >
                     <SelectItem key="pool">Pool</SelectItem>
                     <SelectItem key="bracket">Bracket</SelectItem>
@@ -769,13 +771,13 @@ export default function GamesPage() {
                   </Select>
                 </div>
                 <div>
-                  <label className={labelCls}>Game #</label>
-                  <input
+                  <Input
+                    label="Game #"
+                    variant="bordered"
                     type="number"
-                    className={inputCls}
                     value={newGame.game_number}
-                    onChange={(e) =>
-                      setNewGame({ ...newGame, game_number: e.target.value })
+                    onValueChange={(val) =>
+                      setNewGame({ ...newGame, game_number: val })
                     }
                     placeholder="1"
                   />
@@ -783,12 +785,12 @@ export default function GamesPage() {
               </div>
 
               <div>
-                <label className={labelCls}>Round Name</label>
-                <input
-                  className={inputCls}
+                <Input
+                  label="Round Name"
+                  variant="bordered"
                   value={newGame.round_name}
-                  onChange={(e) =>
-                    setNewGame({ ...newGame, round_name: e.target.value })
+                  onValueChange={(val) =>
+                    setNewGame({ ...newGame, round_name: val })
                   }
                   placeholder="Pool Round 1, Semifinal, etc."
                 />
@@ -798,7 +800,6 @@ export default function GamesPage() {
                 <div>
                   <Select
                     label="Home Team"
-                    labelPlacement="outside"
                     variant="bordered"
                     items={[
                       { key: "__tbd", label: "TBD" },
@@ -814,7 +815,6 @@ export default function GamesPage() {
                         home_team_id: val === "__tbd" ? "" : val,
                       });
                     }}
-                    classNames={selectCls}
                   >
                     {(item) => (
                       <SelectItem key={item.key}>{item.label}</SelectItem>
@@ -824,7 +824,6 @@ export default function GamesPage() {
                 <div>
                   <Select
                     label="Away Team"
-                    labelPlacement="outside"
                     variant="bordered"
                     items={[
                       { key: "__tbd", label: "TBD" },
@@ -840,7 +839,6 @@ export default function GamesPage() {
                         away_team_id: val === "__tbd" ? "" : val,
                       });
                     }}
-                    classNames={selectCls}
                   >
                     {(item) => (
                       <SelectItem key={item.key}>{item.label}</SelectItem>
@@ -849,11 +847,10 @@ export default function GamesPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Select
                     label="Field"
-                    labelPlacement="outside"
                     variant="bordered"
                     items={[
                       { key: "__unassigned", label: "Unassigned" },
@@ -869,7 +866,6 @@ export default function GamesPage() {
                         field_id: val === "__unassigned" ? "" : val,
                       });
                     }}
-                    classNames={selectCls}
                   >
                     {(item) => (
                       <SelectItem key={item.key}>{item.label}</SelectItem>
@@ -877,34 +873,31 @@ export default function GamesPage() {
                   </Select>
                 </div>
                 <div>
-                  <label className={labelCls}>Start Time</label>
-                  <input
-                    type="datetime-local"
-                    className={inputCls}
-                    value={newGame.start_time}
-                    onChange={(e) =>
-                      setNewGame({ ...newGame, start_time: e.target.value })
+                  <DatePicker
+                    label="Start Date & Time"
+                    granularity="minute"
+                    variant="bordered"
+                    value={toCalendarDateTime(newGame.start_time)}
+                    onChange={(val) =>
+                      setNewGame({
+                        ...newGame,
+                        start_time: val ? val.toString() : "",
+                      })
                     }
                   />
                 </div>
               </div>
 
               <div className="flex justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowNewGame(false)}
-                  className="px-4 py-2.5 rounded-xl text-sm text-gray-400 hover:text-white border border-white/10 hover:bg-white/5 transition-colors"
+                <Button
+                  variant="bordered"
+                  onPress={() => setShowNewGame(false)}
                 >
                   Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={gameSaving}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
-                >
-                  {gameSaving && <SaveSpinner className="w-4 h-4" />}
+                </Button>
+                <Button type="submit" color="primary" isLoading={gameSaving}>
                   {gameSaving ? "Scheduling…" : "Schedule Game"}
-                </button>
+                </Button>
               </div>
             </form>
           </div>

@@ -12,7 +12,7 @@ import {
   CheckCircleIcon,
   XCircleIcon,
 } from "@heroicons/react/24/outline";
-import { Select, SelectItem } from "@heroui/react";
+import { Select, SelectItem, Input } from "@heroui/react";
 import { TournamentSelector } from "@/components/admin/TournamentSelector";
 import { TableSkeleton } from "@/components/admin/AdminLoading";
 
@@ -151,31 +151,23 @@ export default function RegistrationsPage() {
       {/* Search + Filter */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-          <input
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-brand-teal/50"
+          <Input
             placeholder="Search by name or email…"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onValueChange={setSearch}
+            variant="bordered"
+            startContent={
+              <MagnifyingGlassIcon className="w-4 h-4 text-gray-500" />
+            }
           />
         </div>
         <div className="flex items-center gap-2">
           <Select
-            aria-label="Filter by status"
             variant="bordered"
             selectedKeys={[statusFilter]}
             onSelectionChange={(keys) =>
               setStatusFilter(Array.from(keys)[0] as string)
             }
-            className="w-44"
-            classNames={{
-              trigger:
-                "flex items-center bg-white/5 border-white/10 rounded-xl data-[focus=true]:border-brand-teal/50 data-[hover=true]:bg-white/8 h-[42px]",
-              value: "text-white text-sm",
-              popoverContent: "bg-brand-charcoal border border-white/10",
-              listbox: "text-white",
-              selectorIcon: "text-gray-400 shrink-0",
-            }}
           >
             <SelectItem key="all">All statuses</SelectItem>
             <SelectItem key="pending">Pending</SelectItem>

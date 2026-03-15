@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { LockClosedIcon } from "@heroicons/react/24/outline";
+import { Button, Spinner } from "@heroui/react";
 
 // ---------------------------------------------------------------------------
 // Square Web Payments SDK type shims
@@ -160,7 +161,7 @@ export default function SquarePaymentForm({
       {/* Loading skeleton */}
       {showSpinner && (
         <div className="flex items-center justify-center py-8 gap-3">
-          <div className="w-5 h-5 border-2 border-brand-teal border-t-transparent rounded-full animate-spin" />
+          <Spinner size="sm" color="primary" />
           <span className="text-gray-400 text-sm">Loading payment form…</span>
         </div>
       )}
@@ -179,24 +180,20 @@ export default function SquarePaymentForm({
       )}
 
       {/* Pay button */}
-      <button
-        type="button"
-        onClick={handlePayClick}
-        disabled={!cardReady || isProcessing || !!error}
-        className="w-full inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-white bg-gradient-brand rounded-xl shadow-lg shadow-brand-teal/25 hover:shadow-brand-teal/40 hover:scale-[1.02] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+      <Button
+        color="primary"
+        size="lg"
+        fullWidth
+        isLoading={isProcessing}
+        isDisabled={!cardReady || !!error}
+        onPress={handlePayClick}
+        startContent={
+          !isProcessing ? <LockClosedIcon className="w-4 h-4" /> : undefined
+        }
+        className="font-semibold"
       >
-        {isProcessing ? (
-          <>
-            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            Processing payment…
-          </>
-        ) : (
-          <>
-            <LockClosedIcon className="w-4 h-4" />
-            Pay {amount} &amp; Register
-          </>
-        )}
-      </button>
+        {isProcessing ? "Processing payment…" : `Pay ${amount} & Register`}
+      </Button>
 
       <p className="text-center text-xs text-gray-500">
         Payments securely processed by{" "}

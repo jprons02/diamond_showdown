@@ -9,6 +9,7 @@ import {
   MapPinIcon,
   PhoneIcon,
 } from "@heroicons/react/24/outline";
+import { Input, Textarea, Button } from "@heroui/react";
 
 const contactInfo = [
   {
@@ -177,99 +178,72 @@ export default function ContactPage() {
                       Thank you for reaching out. We&apos;ll get back to you
                       soon.
                     </p>
-                    <button
-                      onClick={() => setSubmitted(false)}
-                      className="text-brand-teal hover:text-brand-teal-light transition-colors font-medium"
+                    <Button
+                      variant="light"
+                      color="primary"
+                      onPress={() => setSubmitted(false)}
                     >
                       Send another message
-                    </button>
+                    </Button>
                   </div>
                 ) : (
-                  <form onSubmit={handleSubmit} className="space-y-5">
+                  <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                      <div>
-                        <label
-                          htmlFor="name"
-                          className="block text-sm font-medium text-gray-300 mb-2"
-                        >
-                          Name
-                        </label>
-                        <input
-                          type="text"
-                          id="name"
-                          required
-                          value={formData.name}
-                          onChange={(e) =>
-                            setFormData({ ...formData, name: e.target.value })
-                          }
-                          className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-brand-teal/50 focus:ring-1 focus:ring-brand-teal/50 transition-colors"
-                          placeholder="Your name"
-                        />
-                      </div>
-                      <div>
-                        <label
-                          htmlFor="email"
-                          className="block text-sm font-medium text-gray-300 mb-2"
-                        >
-                          Email
-                        </label>
-                        <input
-                          type="email"
-                          id="email"
-                          required
-                          value={formData.email}
-                          onChange={(e) =>
-                            setFormData({ ...formData, email: e.target.value })
-                          }
-                          className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-brand-teal/50 focus:ring-1 focus:ring-brand-teal/50 transition-colors"
-                          placeholder="you@email.com"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="subject"
-                        className="block text-sm font-medium text-gray-300 mb-2"
-                      >
-                        Subject
-                      </label>
-                      <input
-                        type="text"
-                        id="subject"
-                        required
-                        value={formData.subject}
-                        onChange={(e) =>
-                          setFormData({ ...formData, subject: e.target.value })
+                      <Input
+                        label="Name"
+                        labelPlacement="outside"
+                        variant="bordered"
+                        isRequired
+                        value={formData.name}
+                        onValueChange={(val) =>
+                          setFormData({ ...formData, name: val })
                         }
-                        className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-brand-teal/50 focus:ring-1 focus:ring-brand-teal/50 transition-colors"
-                        placeholder="What's this about?"
+                        placeholder="Your name"
+                      />
+                      <Input
+                        label="Email"
+                        labelPlacement="outside"
+                        variant="bordered"
+                        type="email"
+                        isRequired
+                        value={formData.email}
+                        onValueChange={(val) =>
+                          setFormData({ ...formData, email: val })
+                        }
+                        placeholder="you@email.com"
                       />
                     </div>
-                    <div>
-                      <label
-                        htmlFor="message"
-                        className="block text-sm font-medium text-gray-300 mb-2"
-                      >
-                        Message
-                      </label>
-                      <textarea
-                        id="message"
-                        required
-                        rows={5}
-                        value={formData.message}
-                        onChange={(e) =>
-                          setFormData({ ...formData, message: e.target.value })
-                        }
-                        className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-brand-teal/50 focus:ring-1 focus:ring-brand-teal/50 transition-colors resize-none"
-                        placeholder="Your message..."
-                      />
-                    </div>
-                    <button
+                    <Input
+                      label="Subject"
+                      labelPlacement="outside"
+                      variant="bordered"
+                      isRequired
+                      value={formData.subject}
+                      onValueChange={(val) =>
+                        setFormData({ ...formData, subject: val })
+                      }
+                      placeholder="What's this about?"
+                    />
+                    <Textarea
+                      label="Message"
+                      labelPlacement="outside"
+                      variant="bordered"
+                      isRequired
+                      minRows={5}
+                      value={formData.message}
+                      onValueChange={(val) =>
+                        setFormData({ ...formData, message: val })
+                      }
+                      placeholder="Your message..."
+                    />
+                    <Button
                       type="submit"
-                      className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3.5 text-base font-semibold text-white bg-gradient-brand rounded-xl shadow-lg shadow-brand-teal/25 hover:shadow-brand-teal/40 hover:scale-105 transition-all duration-300"
+                      color="primary"
+                      size="lg"
+                      className="font-semibold"
                     >
                       Send Message
-                    </button>
+                    </Button>
                   </form>
                 )}
               </div>

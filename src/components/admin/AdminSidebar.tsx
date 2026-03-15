@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { Button } from "@heroui/react";
 import {
   HomeIcon,
   TrophyIcon,
@@ -125,13 +126,16 @@ export default function AdminSidebar() {
 
       {/* Footer */}
       <div className="px-3 py-4 border-t border-white/5 space-y-1">
-        <button
-          onClick={handleLogout}
-          className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm text-gray-500 hover:text-red-400 hover:bg-red-500/5 transition-colors"
+        <Button
+          variant="light"
+          color="danger"
+          fullWidth
+          className="justify-start"
+          startContent={<ArrowRightOnRectangleIcon className="w-4 h-4" />}
+          onPress={handleLogout}
         >
-          <ArrowRightOnRectangleIcon className="w-4 h-4" />
           Sign Out
-        </button>
+        </Button>
         <Link
           href="/"
           className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm text-gray-500 hover:text-white hover:bg-white/5 transition-colors"
@@ -146,13 +150,15 @@ export default function AdminSidebar() {
   return (
     <>
       {/* Mobile toggle */}
-      <button
-        onClick={() => setMobileOpen(true)}
-        className="fixed top-4 left-4 z-50 md:hidden p-2 rounded-xl bg-brand-surface border border-white/10 text-white"
+      <Button
+        isIconOnly
+        variant="flat"
+        onPress={() => setMobileOpen(true)}
+        className="fixed top-4 left-4 z-50 md:hidden"
         aria-label="Open admin menu"
       >
         <Bars3Icon className="w-5 h-5" />
-      </button>
+      </Button>
 
       {/* Mobile overlay */}
       {mobileOpen && (
@@ -168,13 +174,15 @@ export default function AdminSidebar() {
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <button
-          onClick={() => setMobileOpen(false)}
-          className="absolute top-4 right-4 p-1 text-gray-400 hover:text-white"
+        <Button
+          isIconOnly
+          variant="light"
+          onPress={() => setMobileOpen(false)}
+          className="absolute top-4 right-4"
           aria-label="Close menu"
         >
           <XMarkIcon className="w-5 h-5" />
-        </button>
+        </Button>
         {sidebar}
       </aside>
 

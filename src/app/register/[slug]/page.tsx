@@ -13,7 +13,14 @@ import {
   CalendarDaysIcon,
   MapPinIcon,
 } from "@heroicons/react/24/outline";
-import { Select, SelectItem } from "@heroui/react";
+import {
+  Input,
+  Select,
+  SelectItem,
+  Textarea,
+  Button,
+  Spinner,
+} from "@heroui/react";
 import { createClient } from "@/lib/supabase/client";
 import type { Tournament } from "@/lib/types/database";
 
@@ -22,6 +29,7 @@ interface PlayerFormData {
   lastName: string;
   email: string;
   phone: string;
+  jerseySize: string;
   position1: string;
   position2: string;
   position3: string;
@@ -46,11 +54,14 @@ const EMPTY_PLAYER: PlayerFormData = {
   lastName: "",
   email: "",
   phone: "",
+  jerseySize: "",
   position1: "",
   position2: "",
   position3: "",
   notes: "",
 };
+
+const jerseySizes = ["S", "M", "L", "XL", "2XL", "3XL"];
 
 export default function RegisterSlugPage() {
   const params = useParams<{ slug: string }>();
@@ -168,9 +179,12 @@ export default function RegisterSlugPage() {
     setIsProcessing(false);
   };
 
-  const inputStyles =
-    "w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-brand-teal/50 focus:ring-1 focus:ring-brand-teal/50 transition-colors";
-  const labelStyles = "block text-sm font-medium text-gray-300 mb-2";
+  const inputClassNames = {
+    label: "text-sm font-medium !text-gray-300",
+    inputWrapper:
+      "bg-white/5 border-white/10 rounded-xl data-[focus=true]:border-brand-teal/50 data-[hover=true]:bg-white/8 !border",
+    input: "text-white placeholder:text-gray-500 text-sm",
+  };
   const selectClassNames = {
     label: "text-xs font-medium !text-gray-400",
     trigger:
@@ -185,7 +199,7 @@ export default function RegisterSlugPage() {
   if (loading) {
     return (
       <div className="min-h-[70vh] flex items-center justify-center bg-gradient-dark">
-        <div className="w-8 h-8 border-2 border-brand-teal border-t-transparent rounded-full animate-spin" />
+        <Spinner size="lg" color="primary" />
       </div>
     );
   }
@@ -340,87 +354,92 @@ export default function RegisterSlugPage() {
                 onSubmit={handleInfoSubmit}
                 className="p-6 sm:p-8 rounded-2xl bg-brand-surface/50 border border-white/5 space-y-5"
               >
-                <h2 className="text-xl font-bold text-white mb-2">
+                <h2 className="text-xl font-bold text-white mb-4">
                   Player Registration
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <div>
-                    <label htmlFor="firstName" className={labelStyles}>
-                      First Name *
-                    </label>
-                    <input
-                      type="text"
-                      id="firstName"
-                      required
-                      value={playerData.firstName}
-                      onChange={(e) =>
-                        setPlayerData({
-                          ...playerData,
-                          firstName: e.target.value,
-                        })
-                      }
-                      className={inputStyles}
-                      placeholder="First name"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="lastName" className={labelStyles}>
-                      Last Name *
-                    </label>
-                    <input
-                      type="text"
-                      id="lastName"
-                      required
-                      value={playerData.lastName}
-                      onChange={(e) =>
-                        setPlayerData({
-                          ...playerData,
-                          lastName: e.target.value,
-                        })
-                      }
-                      className={inputStyles}
-                      placeholder="Last name"
-                    />
-                  </div>
+                  <Input
+                    label="First Name"
+                    labelPlacement="outside"
+                    variant="bordered"
+                    placeholder="First name"
+                    isRequired
+                    value={playerData.firstName}
+                    onValueChange={(val) =>
+                      setPlayerData({ ...playerData, firstName: val })
+                    }
+                    classNames={inputClassNames}
+                  />
+                  <Input
+                    label="Last Name"
+                    labelPlacement="outside"
+                    variant="bordered"
+                    placeholder="Last name"
+                    isRequired
+                    value={playerData.lastName}
+                    onValueChange={(val) =>
+                      setPlayerData({ ...playerData, lastName: val })
+                    }
+                    classNames={inputClassNames}
+                  />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <div>
-                    <label htmlFor="email" className={labelStyles}>
-                      Email *
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      required
-                      value={playerData.email}
-                      onChange={(e) =>
-                        setPlayerData({ ...playerData, email: e.target.value })
-                      }
-                      className={inputStyles}
-                      placeholder="you@email.com"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="phone" className={labelStyles}>
-                      Phone *
-                    </label>
-                    <input
-                      type="tel"
-                      id="phone"
-                      required
-                      value={playerData.phone}
-                      onChange={(e) =>
-                        setPlayerData({ ...playerData, phone: e.target.value })
-                      }
-                      className={inputStyles}
-                      placeholder="(555) 123-4567"
-                    />
-                  </div>
+                  <Input
+                    label="Email"
+                    labelPlacement="outside"
+                    variant="bordered"
+                    type="email"
+                    placeholder="you@email.com"
+                    isRequired
+                    value={playerData.email}
+                    onValueChange={(val) =>
+                      setPlayerData({ ...playerData, email: val })
+                    }
+                    classNames={inputClassNames}
+                  />
+                  <Input
+                    label="Phone"
+                    labelPlacement="outside"
+                    variant="bordered"
+                    type="tel"
+                    placeholder="(555) 123-4567"
+                    isRequired
+                    value={playerData.phone}
+                    onValueChange={(val) =>
+                      setPlayerData({ ...playerData, phone: val })
+                    }
+                    classNames={inputClassNames}
+                  />
+                  {/* Jersey Size */}
+                  <Select
+                    label="Jersey Size"
+                    labelPlacement="outside"
+                    variant="bordered"
+                    placeholder="Select..."
+                    isRequired
+                    selectedKeys={
+                      playerData.jerseySize ? [playerData.jerseySize] : []
+                    }
+                    onSelectionChange={(keys) => {
+                      const val = Array.from(keys)[0] as string;
+                      setPlayerData((prev) => ({ ...prev, jerseySize: val }));
+                    }}
+                    classNames={{
+                      ...selectClassNames,
+                      label: "text-sm font-medium !text-gray-300",
+                    }}
+                  >
+                    {jerseySizes.map((size) => (
+                      <SelectItem key={size}>{size}</SelectItem>
+                    ))}
+                  </Select>
                 </div>
 
                 {/* Position Preferences */}
                 <div>
-                  <p className={labelStyles}>Position Preferences *</p>
+                  <p className="text-sm font-medium text-gray-300 mb-2">
+                    Position Preferences
+                  </p>
                   <p className="text-xs text-gray-500 mb-3">
                     Select your top 3 positions in order of preference. Each
                     must be unique.
@@ -431,6 +450,7 @@ export default function RegisterSlugPage() {
                       labelPlacement="outside"
                       variant="bordered"
                       placeholder="Select..."
+                      isRequired
                       selectedKeys={
                         playerData.position1 ? [playerData.position1] : []
                       }
@@ -462,6 +482,7 @@ export default function RegisterSlugPage() {
                       labelPlacement="outside"
                       variant="bordered"
                       placeholder="Select..."
+                      isRequired
                       selectedKeys={
                         playerData.position2 ? [playerData.position2] : []
                       }
@@ -491,6 +512,7 @@ export default function RegisterSlugPage() {
                       labelPlacement="outside"
                       variant="bordered"
                       placeholder="Select..."
+                      isRequired
                       selectedKeys={
                         playerData.position3 ? [playerData.position3] : []
                       }
@@ -521,27 +543,30 @@ export default function RegisterSlugPage() {
                   )}
                 </div>
 
-                <div>
-                  <label htmlFor="notes" className={labelStyles}>
-                    Additional Notes
-                  </label>
-                  <textarea
-                    id="notes"
-                    rows={3}
-                    value={playerData.notes}
-                    onChange={(e) =>
-                      setPlayerData({ ...playerData, notes: e.target.value })
-                    }
-                    className={`${inputStyles} resize-none`}
-                    placeholder="Anything else we should know?"
-                  />
-                </div>
-                <button
+                <Textarea
+                  label="Additional Notes"
+                  labelPlacement="outside"
+                  variant="bordered"
+                  minRows={3}
+                  placeholder="Anything else we should know?"
+                  value={playerData.notes}
+                  onValueChange={(val) =>
+                    setPlayerData({ ...playerData, notes: val })
+                  }
+                  classNames={{
+                    ...inputClassNames,
+                    inputWrapper: `${inputClassNames.inputWrapper} !h-auto`,
+                  }}
+                />
+                <Button
                   type="submit"
-                  className="w-full inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-white bg-gradient-brand rounded-xl shadow-lg shadow-brand-teal/25 hover:shadow-brand-teal/40 hover:scale-[1.02] transition-all duration-300"
+                  color="primary"
+                  size="lg"
+                  fullWidth
+                  className="font-semibold"
                 >
                   Continue to Payment →
-                </button>
+                </Button>
               </form>
             </>
           )}
@@ -560,17 +585,17 @@ export default function RegisterSlugPage() {
                     </span>
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => {
+                <Button
+                  variant="light"
+                  onPress={() => {
                     setStep("info");
                     setPaymentError(null);
                   }}
-                  className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-white transition-colors"
+                  startContent={<ArrowLeftIcon className="w-4 h-4" />}
+                  className="text-gray-400"
                 >
-                  <ArrowLeftIcon className="w-4 h-4" />
                   Edit info
-                </button>
+                </Button>
               </div>
 
               {/* Registered details mini-summary */}
@@ -582,6 +607,10 @@ export default function RegisterSlugPage() {
                 <div>
                   <span className="text-gray-500">Phone</span>
                   <p className="text-white">{playerData.phone}</p>
+                </div>
+                <div>
+                  <span className="text-gray-500">Jersey size</span>
+                  <p className="text-white">{playerData.jerseySize}</p>
                 </div>
                 <div>
                   <span className="text-gray-500">1st position</span>
@@ -604,14 +633,15 @@ export default function RegisterSlugPage() {
 
               {/* Dev-only: skip payment for testing */}
               {process.env.NODE_ENV !== "production" && (
-                <button
-                  type="button"
-                  disabled={isProcessing}
-                  onClick={() => handlePaymentToken("TEST_TOKEN_BYPASS")}
-                  className="w-full py-3 text-sm font-medium text-yellow-400 border border-yellow-400/30 rounded-xl bg-yellow-400/5 hover:bg-yellow-400/10 transition-colors disabled:opacity-50"
+                <Button
+                  variant="bordered"
+                  isDisabled={isProcessing}
+                  onPress={() => handlePaymentToken("TEST_TOKEN_BYPASS")}
+                  fullWidth
+                  className="text-yellow-400 border-yellow-400/30 bg-yellow-400/5"
                 >
                   ⚡ Skip Payment (Dev Mode)
-                </button>
+                </Button>
               )}
 
               {/* Top-level payment error (from API) */}
