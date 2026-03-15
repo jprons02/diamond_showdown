@@ -130,26 +130,23 @@ export default async function TournamentListPage() {
 
   return (
     <div className="min-h-screen bg-gradient-dark">
-      {/* Hero */}
-      <section className="relative pt-28 pb-12 sm:pt-36 sm:pb-16 overflow-hidden">
+      <section className="relative pt-28 pb-24 sm:pt-36 sm:pb-32 overflow-hidden">
         <FloatingDiamonds />
-        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-brand-teal font-semibold text-sm uppercase tracking-widest mb-3 animate-fade-in">
-            {brand.name}
-          </p>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white mb-4 animate-slide-up">
-            Select a <span className="text-gradient-animated">Tournament</span>
-          </h1>
-          <p className="text-gray-400 max-w-xl mx-auto animate-slide-up-delay">
-            Choose a tournament below to view brackets, draft results, game
-            schedules, rules, and announcements.
-          </p>
-        </div>
-      </section>
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <p className="text-brand-teal font-semibold text-sm uppercase tracking-widest mb-3 animate-fade-in">
+              {brand.name}
+            </p>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white mb-4 animate-slide-up">
+              Select a{" "}
+              <span className="text-gradient-animated">Tournament</span>
+            </h1>
+            <p className="text-gray-400 max-w-xl mx-auto animate-slide-up-delay">
+              Choose a tournament below to view brackets, draft results, game
+              schedules, rules, and announcements.
+            </p>
+          </div>
 
-      {/* Tournament cards */}
-      <section className="relative pb-24">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           {list.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {list.map((t) => (
