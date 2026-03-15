@@ -399,7 +399,7 @@ export default function GamesPage() {
             </div>
 
             {/* Action buttons — stacked, vertically centered */}
-            <div className="shrink-0 self-center flex flex-col items-stretch gap-2">
+            <div className="shrink-0 self-start sm:self-center flex flex-col items-stretch gap-2">
               {bracketExists && (
                 <Button
                   variant="bordered"
@@ -847,7 +847,7 @@ export default function GamesPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Select
                     label="Field"
