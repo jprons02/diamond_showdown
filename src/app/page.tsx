@@ -113,12 +113,16 @@ export default function HomePage() {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up-delay-2">
-              <RegisterButton className="group inline-flex items-center justify-center px-8 py-4 text-base font-bold text-white bg-gradient-brand rounded-xl shadow-lg shadow-brand-teal/30 hover:shadow-brand-teal/50 hover:scale-105 transition-all duration-300 w-full sm:w-auto glow-teal">
-                <FireIcon className="w-5 h-5 mr-2 group-hover:animate-bounce" />
+              <RegisterButton
+                size="lg"
+                className="group inline-flex items-center justify-center px-8 py-4 text-base font-bold text-white bg-gradient-brand rounded-xl shadow-lg shadow-brand-teal/30 hover:shadow-brand-teal/50 hover:scale-105 transition-all duration-300 w-full sm:w-auto glow-teal"
+              >
+                <FireIcon className="w-5 h-5" />
                 Register Now
               </RegisterButton>
               <GlassButton
                 href="/about"
+                size="lg"
                 className="inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-white bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl hover:bg-white/20 hover:border-white/30 transition-all duration-300 w-full sm:w-auto"
               >
                 Learn More
@@ -248,8 +252,11 @@ export default function HomePage() {
             team, and compete for the title.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <RegisterButton className="group inline-flex items-center justify-center px-10 py-5 text-lg font-bold text-white bg-gradient-brand rounded-2xl shadow-xl shadow-brand-teal/30 hover:shadow-brand-teal/50 hover:scale-105 transition-all duration-300 w-full sm:w-auto glow-teal-lg">
-              <FireIcon className="w-5 h-5 mr-2" />
+            <RegisterButton
+              size="lg"
+              className="group inline-flex items-center justify-center px-10 py-5 text-lg font-bold text-white bg-gradient-brand rounded-2xl shadow-xl shadow-brand-teal/30 hover:shadow-brand-teal/50 hover:scale-105 transition-all duration-300 w-full sm:w-auto glow-teal-lg"
+            >
+              <FireIcon className="w-5 h-5" />
               Register Now
             </RegisterButton>
           </div>
