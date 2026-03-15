@@ -20,6 +20,7 @@ export async function POST(req: NextRequest) {
         lastName: string;
         email: string;
         phone: string;
+        jerseySize: string;
         position1: string;
         position2: string;
         position3: string;
@@ -165,6 +166,7 @@ export async function POST(req: NextRequest) {
           last_name: playerData.lastName.trim(),
           email,
           phone: playerData.phone.trim() || null,
+          shirt_size: playerData.jerseySize || null,
           preferred_position: `${position1}, ${position2}, ${position3}`,
           notes: playerData.notes.trim() || null,
           updated_at: new Date().toISOString(),
