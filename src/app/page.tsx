@@ -3,11 +3,9 @@ import Image from "next/image";
 import { brand } from "@/lib/brand";
 import HeroBackground from "@/components/HeroBackground";
 import FloatingDiamonds from "@/components/FloatingDiamonds";
-import StatsBar from "@/components/StatsBar";
 import RegisterButton from "@/components/RegisterButton";
+import GlassButton from "@/components/GlassButton";
 import {
-  CalendarDaysIcon,
-  MapPinIcon,
   UserGroupIcon,
   TrophyIcon,
   BoltIcon,
@@ -15,12 +13,43 @@ import {
   FireIcon,
 } from "@heroicons/react/24/outline";
 
+const steps = [
+  {
+    number: "1",
+    icon: UserGroupIcon,
+    title: "Register as a Free Agent",
+    description:
+      "Sign up solo — no team needed. Just show up ready to compete.",
+  },
+  {
+    number: "2",
+    icon: BoltIcon,
+    title: "Live Draft Day",
+    description:
+      "Team captains pick their rosters in a live draft event before the tournament.",
+  },
+  {
+    number: "3",
+    icon: TrophyIcon,
+    title: "Compete All Weekend",
+    description:
+      "Battle through a double elimination bracket over a full weekend of softball.",
+  },
+  {
+    number: "4",
+    icon: FireIcon,
+    title: "Claim the Diamond",
+    description:
+      "One team earns the right to call themselves Diamond Showdown champions.",
+  },
+];
+
 const highlights = [
   {
     icon: TrophyIcon,
     title: "Competitive Play",
     description:
-      "Double elimination format ensures every team gets a fair shot at the title.",
+      "Bracket-style competition designed to keep every team in the fight until the very end.",
   },
   {
     icon: UserGroupIcon,
@@ -32,7 +61,7 @@ const highlights = [
     icon: BoltIcon,
     title: "Action-Packed Weekend",
     description:
-      "Three days of non-stop softball action with games, food, and community.",
+      "Non-stop softball action packed with great games, good food, fun vibes.",
   },
   {
     icon: ShieldCheckIcon,
@@ -88,12 +117,12 @@ export default function HomePage() {
                 <FireIcon className="w-5 h-5 mr-2 group-hover:animate-bounce" />
                 Register Now
               </RegisterButton>
-              <Link
+              <GlassButton
                 href="/about"
-                className="inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-white bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl hover:bg-white/20 hover:border-white/30 transition-all duration-300 w-full sm:w-auto"
+                className="inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-white bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl hover:bg-white/20 hover:border-white/30 transition-all duration-300 w-full sm:w-auto"
               >
                 Learn More
-              </Link>
+              </GlassButton>
             </div>
 
             {/* Scroll indicator */}
@@ -105,48 +134,6 @@ export default function HomePage() {
           </div>
         </div>
       </HeroBackground>
-
-      {/* Stats Bar */}
-      <section className="relative bg-brand-dark border-y border-white/5 -mt-16 z-10">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-          <StatsBar />
-        </div>
-      </section>
-
-      {/* Quick Info Bar */}
-      <section className="bg-gradient-dark border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
-            <div className="flex items-center justify-center gap-3 p-4 rounded-xl bg-white/[0.02] border border-white/5">
-              <CalendarDaysIcon className="w-6 h-6 text-brand-teal flex-shrink-0" />
-              <div>
-                <p className="text-sm text-gray-400">Date</p>
-                <p className="font-semibold text-white">
-                  {brand.tournament.date}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center justify-center gap-3 p-4 rounded-xl bg-white/[0.02] border border-white/5">
-              <MapPinIcon className="w-6 h-6 text-brand-teal flex-shrink-0" />
-              <div>
-                <p className="text-sm text-gray-400">Location</p>
-                <p className="font-semibold text-white">
-                  {brand.tournament.location}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center justify-center gap-3 p-4 rounded-xl bg-white/[0.02] border border-white/5">
-              <UserGroupIcon className="w-6 h-6 text-brand-teal flex-shrink-0" />
-              <div>
-                <p className="text-sm text-gray-400">Format</p>
-                <p className="font-semibold text-white">
-                  {brand.tournament.format} — {brand.tournament.maxTeams} Teams
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Highlights Section */}
       <section className="relative py-20 sm:py-28 bg-gradient-dark overflow-hidden">
@@ -234,9 +221,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CTA Section with background image */}
-      <section className="relative py-24 sm:py-32 overflow-hidden">
-        {/* Background image */}
+      {/* CTA — dramatic full-width */}
+      <section className="relative py-28 sm:py-36 overflow-hidden">
         <div className="absolute inset-0">
           <Image
             src="https://images.unsplash.com/photo-1471295253337-3ceaaedca402?w=1920&q=80"
@@ -245,41 +231,27 @@ export default function HomePage() {
             className="object-cover"
             sizes="100vw"
           />
-          <div className="absolute inset-0 bg-black/70" />
-          <div className="absolute inset-0 bg-gradient-to-r from-brand-dark/80 via-transparent to-brand-dark/80" />
-          <div className="absolute inset-0 bg-noise opacity-20" />
+          <div className="absolute inset-0 bg-black/75" />
+          <div className="absolute inset-0 bg-brand-teal/5" />
         </div>
 
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="relative p-10 sm:p-16 rounded-3xl bg-brand-surface/70 backdrop-blur-xl border border-white/10 overflow-hidden">
-            {/* Animated glow */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-80 h-40 bg-brand-teal/15 blur-3xl rounded-full animate-pulse-glow" />
-            <div className="absolute -bottom-10 -right-10 w-60 h-60 bg-brand-teal/5 blur-3xl rounded-full" />
-
-            <div className="relative">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-teal/10 text-brand-teal text-xs font-semibold uppercase tracking-widest mb-6">
-                <FireIcon className="w-4 h-4" />
-                Limited Spots
-              </div>
-              <h2 className="text-3xl sm:text-5xl font-extrabold text-white mb-4">
-                Ready to Compete?
-              </h2>
-              <p className="text-gray-300 mb-8 max-w-lg mx-auto text-lg">
-                Spots are limited — register as a player for{" "}
-                {brand.tournament.freeAgentFee} and get drafted onto a team.
-              </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <RegisterButton className="group inline-flex items-center justify-center px-8 py-4 text-base font-bold text-white bg-gradient-brand rounded-xl shadow-lg shadow-brand-teal/30 hover:shadow-brand-teal/50 hover:scale-105 transition-all duration-300 w-full sm:w-auto animate-pulse-glow">
-                  Register Now
-                </RegisterButton>
-                <Link
-                  href="/rules"
-                  className="inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-white bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl hover:bg-white/20 transition-all duration-300 w-full sm:w-auto"
-                >
-                  View Rules
-                </Link>
-              </div>
-            </div>
+        <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-teal/10 border border-brand-teal/20 text-brand-teal text-xs font-semibold uppercase tracking-widest mb-8">
+            <FireIcon className="w-4 h-4" />
+            Limited Spots Available
+          </div>
+          <h2 className="text-4xl sm:text-6xl font-extrabold text-white mb-6">
+            Ready to Compete?
+          </h2>
+          <p className="text-gray-300 text-lg mb-10 max-w-lg mx-auto">
+            Spots are limited. Register as a free agent, get drafted onto a
+            team, and compete for the title.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <RegisterButton className="group inline-flex items-center justify-center px-10 py-5 text-lg font-bold text-white bg-gradient-brand rounded-2xl shadow-xl shadow-brand-teal/30 hover:shadow-brand-teal/50 hover:scale-105 transition-all duration-300 w-full sm:w-auto glow-teal-lg">
+              <FireIcon className="w-5 h-5 mr-2" />
+              Register Now
+            </RegisterButton>
           </div>
         </div>
       </section>
