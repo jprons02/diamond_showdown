@@ -15,7 +15,7 @@ import {
   EyeSlashIcon,
 } from "@heroicons/react/24/outline";
 import { TournamentSelector } from "@/components/admin/TournamentSelector";
-import { Select, SelectItem } from "@heroui/react";
+import { Select, SelectItem, Input, Textarea, Button } from "@heroui/react";
 import { RowSkeleton, SaveSpinner } from "@/components/admin/AdminLoading";
 
 export default function AnnouncementsPage() {
@@ -132,13 +132,13 @@ export default function AnnouncementsPage() {
             Post updates for players and teams
           </p>
         </div>
-        <button
-          onClick={openCreate}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+        <Button
+          color="primary"
+          onPress={openCreate}
+          startContent={<PlusIcon className="w-4 h-4" />}
         >
-          <PlusIcon className="w-4 h-4" />
           New Announcement
-        </button>
+        </Button>
       </div>
 
       <TournamentSelector
@@ -183,9 +183,11 @@ export default function AnnouncementsPage() {
                   </p>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
-                  <button
-                    onClick={() => togglePublish(a)}
-                    className="p-2 rounded-lg hover:bg-white/5 text-gray-400 hover:text-white transition-colors"
+                  <Button
+                    isIconOnly
+                    variant="light"
+                    size="sm"
+                    onPress={() => togglePublish(a)}
                     title={a.published_at ? "Unpublish" : "Publish"}
                   >
                     {a.published_at ? (
@@ -193,19 +195,24 @@ export default function AnnouncementsPage() {
                     ) : (
                       <EyeIcon className="w-4 h-4" />
                     )}
-                  </button>
-                  <button
-                    onClick={() => openEdit(a)}
-                    className="p-2 rounded-lg hover:bg-white/5 text-gray-400 hover:text-white transition-colors"
+                  </Button>
+                  <Button
+                    isIconOnly
+                    variant="light"
+                    size="sm"
+                    onPress={() => openEdit(a)}
                   >
                     <PencilSquareIcon className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(a.id)}
-                    className="p-2 rounded-lg hover:bg-red-500/10 text-gray-400 hover:text-red-400 transition-colors"
+                  </Button>
+                  <Button
+                    isIconOnly
+                    variant="light"
+                    size="sm"
+                    color="danger"
+                    onPress={() => handleDelete(a.id)}
                   >
                     <TrashIcon className="w-4 h-4" />
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -224,34 +231,33 @@ export default function AnnouncementsPage() {
               <h2 className="text-lg font-semibold text-white">
                 {editingId ? "Edit Announcement" : "New Announcement"}
               </h2>
-              <button
-                onClick={() => setShowForm(false)}
-                className="text-gray-400 hover:text-white"
+              <Button
+                isIconOnly
+                variant="light"
+                onPress={() => setShowForm(false)}
               >
                 <XMarkIcon className="w-5 h-5" />
-              </button>
+              </Button>
             </div>
             <form onSubmit={handleSave} className="space-y-4">
-              <div>
-                <label className={labelCls}>Title *</label>
-                <input
-                  required
-                  className={inputCls}
-                  value={form.title}
-                  onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  placeholder="Schedule Update"
-                />
-              </div>
-              <div>
-                <label className={labelCls}>Body</label>
-                <textarea
-                  rows={4}
-                  className={inputCls}
-                  value={form.body}
-                  onChange={(e) => setForm({ ...form, body: e.target.value })}
-                  placeholder="Details of the announcement…"
-                />
-              </div>
+              <Input
+                label="Title"
+                labelPlacement="outside"
+                variant="bordered"
+                isRequired
+                value={form.title}
+                onValueChange={(val) => setForm({ ...form, title: val })}
+                placeholder="Schedule Update"
+              />
+              <Textarea
+                label="Body"
+                labelPlacement="outside"
+                variant="bordered"
+                minRows={4}
+                value={form.body}
+                onValueChange={(val) => setForm({ ...form, body: val })}
+                placeholder="Details of the announcement…"
+              />
               <div>
                 <label className={labelCls}>Audience</label>
                 <Select
@@ -280,25 +286,16 @@ export default function AnnouncementsPage() {
                 </Select>
               </div>
               <div className="flex justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowForm(false)}
-                  className="px-4 py-2.5 rounded-xl text-sm text-gray-400 hover:text-white border border-white/10 hover:bg-white/5 transition-colors"
-                >
+                <Button variant="bordered" onPress={() => setShowForm(false)}>
                   Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
-                >
-                  {saving && <SaveSpinner className="w-4 h-4" />}
+                </Button>
+                <Button type="submit" color="primary" isLoading={saving}>
                   {saving
                     ? "Saving…"
                     : editingId
                       ? "Update"
                       : "Post Announcement"}
-                </button>
+                </Button>
               </div>
             </form>
           </div>

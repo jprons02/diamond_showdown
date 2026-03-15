@@ -13,7 +13,7 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { DatePicker } from "@heroui/date-picker";
-import { Select, SelectItem } from "@heroui/react";
+import { Select, SelectItem, Input, Textarea, Button } from "@heroui/react";
 import { RowSkeleton, SaveSpinner } from "@/components/admin/AdminLoading";
 import {
   parseDate,
@@ -269,13 +269,13 @@ export default function TournamentsPage() {
             Create and manage tournament events
           </p>
         </div>
-        <button
-          onClick={openCreateForm}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+        <Button
+          color="primary"
+          onPress={openCreateForm}
+          startContent={<PlusIcon className="w-4 h-4" />}
         >
-          <PlusIcon className="w-4 h-4" />
           New Tournament
-        </button>
+        </Button>
       </div>
 
       {/* Tournament list */}
@@ -315,20 +315,25 @@ export default function TournamentsPage() {
                 </p>
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                <button
-                  onClick={() => openEditForm(t)}
-                  className="p-2 rounded-lg hover:bg-white/5 text-gray-400 hover:text-white transition-colors"
+                <Button
+                  isIconOnly
+                  variant="light"
+                  size="sm"
+                  onPress={() => openEditForm(t)}
                   title="Edit"
                 >
                   <PencilSquareIcon className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => handleDelete(t.id)}
-                  className="p-2 rounded-lg hover:bg-red-500/10 text-gray-400 hover:text-red-400 transition-colors"
+                </Button>
+                <Button
+                  isIconOnly
+                  variant="light"
+                  size="sm"
+                  color="danger"
+                  onPress={() => handleDelete(t.id)}
                   title="Delete"
                 >
                   <TrashIcon className="w-4 h-4" />
-                </button>
+                </Button>
               </div>
             </div>
           ))}
@@ -347,48 +352,44 @@ export default function TournamentsPage() {
               <h2 className="text-lg font-semibold text-white">
                 {editingId ? "Edit Tournament" : "New Tournament"}
               </h2>
-              <button
-                onClick={() => setShowForm(false)}
-                className="text-gray-400 hover:text-white"
+              <Button
+                isIconOnly
+                variant="light"
+                onPress={() => setShowForm(false)}
               >
                 <XMarkIcon className="w-5 h-5" />
-              </button>
+              </Button>
             </div>
 
-            <form onSubmit={handleSave} className="space-y-5">
+            <form onSubmit={handleSave} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className={labelCls}>Tournament Name *</label>
-                  <input
-                    required
-                    className={inputCls}
-                    value={form.name}
-                    onChange={(e) =>
-                      setForm({
-                        ...form,
-                        name: e.target.value,
-                        slug: form.slug || slugify(e.target.value),
-                      })
-                    }
-                    placeholder="Spring Classic 2026"
-                  />
-                </div>
-                <div>
-                  <label className={labelCls}>Slug</label>
-                  <input
-                    className={inputCls}
-                    value={form.slug}
-                    onChange={(e) => setForm({ ...form, slug: e.target.value })}
-                    placeholder="spring-classic-2026"
-                  />
-                </div>
+                <Input
+                  label="Tournament Name"
+                  variant="bordered"
+                  isRequired
+                  value={form.name}
+                  onValueChange={(val) =>
+                    setForm({
+                      ...form,
+                      name: val,
+                      slug: form.slug || slugify(val),
+                    })
+                  }
+                  placeholder="Spring Classic 2026"
+                />
+                <Input
+                  label="Slug"
+                  variant="bordered"
+                  value={form.slug}
+                  onValueChange={(val) => setForm({ ...form, slug: val })}
+                  placeholder="spring-classic-2026"
+                />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <DatePicker
                     label="Event Date"
-                    labelPlacement="outside"
                     granularity="day"
                     variant="bordered"
                     isInvalid={!!formErrors.event_date}
@@ -402,21 +403,11 @@ export default function TournamentsPage() {
                       setForm(updated);
                       setFormErrors(validateForm(updated));
                     }}
-                    classNames={{
-                      base: "w-full",
-                      label: "text-xs font-medium !text-gray-400",
-                      inputWrapper:
-                        "bg-white/5 border-white/10 rounded-xl data-[focus=true]:border-brand-teal/50 data-[hover=true]:bg-white/8",
-                      segment:
-                        "text-white data-[placeholder=true]:text-gray-500",
-                      selectorIcon: "text-gray-400",
-                    }}
                   />
                 </div>
                 <div>
                   <Select
                     label="Status"
-                    labelPlacement="outside"
                     variant="bordered"
                     selectedKeys={[form.status]}
                     onSelectionChange={(keys) =>
@@ -425,16 +416,6 @@ export default function TournamentsPage() {
                         status: Array.from(keys)[0] as TournamentStatus,
                       })
                     }
-                    classNames={{
-                      base: "w-full",
-                      label: "text-xs font-medium !text-gray-400",
-                      trigger:
-                        "bg-white/5 border-white/10 rounded-xl data-[focus=true]:border-brand-teal/50 data-[hover=true]:bg-white/8 h-[42px]",
-                      value: "text-white text-sm",
-                      popoverContent:
-                        "bg-brand-charcoal border border-white/10",
-                      listbox: "text-white",
-                    }}
                   >
                     {STATUS_OPTIONS.map((s) => (
                       <SelectItem key={s}>
@@ -446,35 +427,30 @@ export default function TournamentsPage() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className={labelCls}>Location Name</label>
-                  <input
-                    className={inputCls}
-                    value={form.location_name}
-                    onChange={(e) =>
-                      setForm({ ...form, location_name: e.target.value })
-                    }
-                    placeholder="City Park Fields"
-                  />
-                </div>
-                <div>
-                  <label className={labelCls}>Location Address</label>
-                  <input
-                    className={inputCls}
-                    value={form.location_address}
-                    onChange={(e) =>
-                      setForm({ ...form, location_address: e.target.value })
-                    }
-                    placeholder="123 Main St, City, ST"
-                  />
-                </div>
+                <Input
+                  label="Location Name"
+                  variant="bordered"
+                  value={form.location_name}
+                  onValueChange={(val) =>
+                    setForm({ ...form, location_name: val })
+                  }
+                  placeholder="City Park Fields"
+                />
+                <Input
+                  label="Location Address"
+                  variant="bordered"
+                  value={form.location_address}
+                  onValueChange={(val) =>
+                    setForm({ ...form, location_address: val })
+                  }
+                  placeholder="123 Main St, City, ST"
+                />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <DatePicker
                     label="Registration Opens"
-                    labelPlacement="outside"
                     granularity="day"
                     variant="bordered"
                     value={toCalendarDate(form.registration_open)}
@@ -486,21 +462,11 @@ export default function TournamentsPage() {
                       setForm(updated);
                       setFormErrors(validateForm(updated));
                     }}
-                    classNames={{
-                      base: "w-full",
-                      label: "text-xs font-medium !text-gray-400",
-                      inputWrapper:
-                        "bg-white/5 border-white/10 rounded-xl data-[focus=true]:border-brand-teal/50 data-[hover=true]:bg-white/8",
-                      segment:
-                        "text-white data-[placeholder=true]:text-gray-500",
-                      selectorIcon: "text-gray-400",
-                    }}
                   />
                 </div>
                 <div>
                   <DatePicker
                     label="Registration Closes"
-                    labelPlacement="outside"
                     granularity="day"
                     variant="bordered"
                     isInvalid={!!formErrors.registration_close}
@@ -514,15 +480,6 @@ export default function TournamentsPage() {
                       setForm(updated);
                       setFormErrors(validateForm(updated));
                     }}
-                    classNames={{
-                      base: "w-full",
-                      label: "text-xs font-medium !text-gray-400",
-                      inputWrapper:
-                        "bg-white/5 border-white/10 rounded-xl data-[focus=true]:border-brand-teal/50 data-[hover=true]:bg-white/8",
-                      segment:
-                        "text-white data-[placeholder=true]:text-gray-500",
-                      selectorIcon: "text-gray-400",
-                    }}
                   />
                 </div>
               </div>
@@ -531,7 +488,6 @@ export default function TournamentsPage() {
                 <div>
                   <DatePicker
                     label="Draft Date"
-                    labelPlacement="outside"
                     granularity="day"
                     variant="bordered"
                     isInvalid={!!formErrors.draft_datetime}
@@ -545,21 +501,11 @@ export default function TournamentsPage() {
                       setForm(updated);
                       setFormErrors(validateForm(updated));
                     }}
-                    classNames={{
-                      base: "w-full",
-                      label: "text-xs font-medium !text-gray-400",
-                      inputWrapper:
-                        "bg-white/5 border-white/10 rounded-xl data-[focus=true]:border-brand-teal/50 data-[hover=true]:bg-white/8",
-                      segment:
-                        "text-white data-[placeholder=true]:text-gray-500",
-                      selectorIcon: "text-gray-400",
-                    }}
                   />
                 </div>
                 <div>
                   <Select
                     label="Bracket Format"
-                    labelPlacement="outside"
                     variant="bordered"
                     placeholder="Select format"
                     selectedKeys={
@@ -572,16 +518,6 @@ export default function TournamentsPage() {
                           (Array.from(keys)[0] as BracketFormat) ?? "",
                       })
                     }
-                    classNames={{
-                      base: "w-full",
-                      label: "text-xs font-medium !text-gray-400",
-                      trigger:
-                        "bg-white/5 border-white/10 rounded-xl data-[focus=true]:border-brand-teal/50 data-[hover=true]:bg-white/8 h-[42px]",
-                      value: "text-white text-sm",
-                      popoverContent:
-                        "bg-brand-charcoal border border-white/10",
-                      listbox: "text-white",
-                    }}
                   >
                     {BRACKET_FORMAT_OPTIONS.map((opt) => (
                       <SelectItem key={opt.value}>{opt.label}</SelectItem>
@@ -591,78 +527,56 @@ export default function TournamentsPage() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label className={labelCls}>Min Players</label>
-                  <input
-                    type="number"
-                    className={inputCls}
-                    value={form.min_players}
-                    onChange={(e) =>
-                      setForm({ ...form, min_players: e.target.value })
-                    }
-                    placeholder="70"
-                  />
-                </div>
-                <div>
-                  <label className={labelCls}>Max Players</label>
-                  <input
-                    type="number"
-                    className={inputCls}
-                    value={form.max_players}
-                    onChange={(e) =>
-                      setForm({ ...form, max_players: e.target.value })
-                    }
-                    placeholder="100"
-                  />
-                </div>
-                <div>
-                  <label className={labelCls}>Entry Fee ($)</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    className={inputCls}
-                    value={form.entry_fee}
-                    onChange={(e) =>
-                      setForm({ ...form, entry_fee: e.target.value })
-                    }
-                    placeholder="50.00"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className={labelCls}>Rules / Notes</label>
-                <textarea
-                  rows={4}
-                  className={inputCls}
-                  value={form.rules_text}
-                  onChange={(e) =>
-                    setForm({ ...form, rules_text: e.target.value })
+                <Input
+                  label="Min Players"
+                  variant="bordered"
+                  type="number"
+                  value={form.min_players}
+                  onValueChange={(val) =>
+                    setForm({ ...form, min_players: val })
                   }
-                  placeholder="Optional rules or notes for this tournament..."
+                  placeholder="70"
+                />
+                <Input
+                  label="Max Players"
+                  variant="bordered"
+                  type="number"
+                  value={form.max_players}
+                  onValueChange={(val) =>
+                    setForm({ ...form, max_players: val })
+                  }
+                  placeholder="100"
+                />
+                <Input
+                  label="Entry Fee ($)"
+                  variant="bordered"
+                  type="number"
+                  value={form.entry_fee}
+                  onValueChange={(val) => setForm({ ...form, entry_fee: val })}
+                  placeholder="50.00"
                 />
               </div>
 
+              <Textarea
+                label="Rules / Notes"
+                variant="bordered"
+                minRows={4}
+                value={form.rules_text}
+                onValueChange={(val) => setForm({ ...form, rules_text: val })}
+                placeholder="Optional rules or notes for this tournament..."
+              />
+
               <div className="flex justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowForm(false)}
-                  className="px-4 py-2.5 rounded-xl text-sm text-gray-400 hover:text-white border border-white/10 hover:bg-white/5 transition-colors"
-                >
+                <Button variant="bordered" onPress={() => setShowForm(false)}>
                   Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
-                >
-                  {saving && <SaveSpinner className="w-4 h-4" />}
+                </Button>
+                <Button type="submit" color="primary" isLoading={saving}>
                   {saving
                     ? "Saving…"
                     : editingId
                       ? "Update Tournament"
                       : "Create Tournament"}
-                </button>
+                </Button>
               </div>
             </form>
           </div>

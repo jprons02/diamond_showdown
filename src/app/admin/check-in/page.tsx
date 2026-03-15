@@ -12,7 +12,7 @@ import {
   XCircleIcon,
   ClockIcon,
 } from "@heroicons/react/24/outline";
-import { Select, SelectItem } from "@heroui/react";
+import { Select, SelectItem, Input, Button } from "@heroui/react";
 import { TournamentSelector } from "@/components/admin/TournamentSelector";
 import { RowSkeleton, SaveSpinner } from "@/components/admin/AdminLoading";
 
@@ -128,15 +128,13 @@ export default function CheckInPage() {
       </div>
 
       {/* Search */}
-      <div className="relative">
-        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-        <input
-          className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-brand-teal/50"
-          placeholder="Search player name or email…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </div>
+      <Input
+        variant="bordered"
+        placeholder="Search player name or email…"
+        value={search}
+        onValueChange={setSearch}
+        startContent={<MagnifyingGlassIcon className="w-4 h-4 text-gray-500" />}
+      />
 
       {/* Check-in list */}
       {loading ? (
@@ -174,37 +172,36 @@ export default function CheckInPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   {status !== "checked_in" && (
-                    <button
-                      onClick={() => setCheckIn(reg.id, "checked_in")}
-                      disabled={actionRegId === reg.id}
-                      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-emerald-400/10 text-emerald-400 hover:bg-emerald-400/20 transition-colors font-medium disabled:opacity-50"
+                    <Button
+                      size="sm"
+                      color="success"
+                      variant="flat"
+                      isLoading={actionRegId === reg.id}
+                      onPress={() => setCheckIn(reg.id, "checked_in")}
                     >
-                      {actionRegId === reg.id && (
-                        <SaveSpinner className="w-3 h-3" />
-                      )}
                       Check In
-                    </button>
+                    </Button>
                   )}
                   {status === "checked_in" && (
-                    <button
-                      onClick={() => setCheckIn(reg.id, "not_arrived")}
-                      disabled={actionRegId === reg.id}
-                      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors disabled:opacity-50"
+                    <Button
+                      size="sm"
+                      variant="light"
+                      isLoading={actionRegId === reg.id}
+                      onPress={() => setCheckIn(reg.id, "not_arrived")}
                     >
-                      {actionRegId === reg.id && (
-                        <SaveSpinner className="w-3 h-3" />
-                      )}
                       Undo
-                    </button>
+                    </Button>
                   )}
                   {status !== "no_show" && (
-                    <button
-                      onClick={() => setCheckIn(reg.id, "no_show")}
-                      disabled={actionRegId === reg.id}
-                      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-400/10 transition-colors disabled:opacity-50"
+                    <Button
+                      size="sm"
+                      variant="light"
+                      color="danger"
+                      isLoading={actionRegId === reg.id}
+                      onPress={() => setCheckIn(reg.id, "no_show")}
                     >
                       No Show
-                    </button>
+                    </Button>
                   )}
                 </div>
               </div>

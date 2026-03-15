@@ -9,6 +9,7 @@ import {
   CheckCircleIcon,
   StarIcon,
 } from "@heroicons/react/24/outline";
+import { Button } from "@heroui/react";
 import type { Tournament, Team } from "@/lib/types/database";
 
 // ─── Exported type so page.tsx / TournamentTabs can share it ─────────
@@ -152,28 +153,24 @@ export default function DraftTab({
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Team filter chips */}
         <div className="flex flex-wrap gap-2 mb-5">
-          <button
-            onClick={() => setSelectedTeam(null)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-              selectedTeam === null
-                ? "bg-brand-teal text-white shadow-lg shadow-brand-teal/25"
-                : "bg-white/5 text-gray-400 hover:text-white hover:bg-white/10"
-            }`}
+          <Button
+            size="sm"
+            variant={selectedTeam === null ? "solid" : "flat"}
+            color={selectedTeam === null ? "primary" : "default"}
+            onPress={() => setSelectedTeam(null)}
           >
             All Teams
-          </button>
+          </Button>
           {teams.map((team, idx) => (
-            <button
+            <Button
               key={team.id}
-              onClick={() => setSelectedTeam(selectedTeam === idx ? null : idx)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                selectedTeam === idx
-                  ? "bg-brand-teal text-white shadow-lg shadow-brand-teal/25"
-                  : "bg-white/5 text-gray-400 hover:text-white hover:bg-white/10"
-              }`}
+              size="sm"
+              variant={selectedTeam === idx ? "solid" : "flat"}
+              color={selectedTeam === idx ? "primary" : "default"}
+              onPress={() => setSelectedTeam(selectedTeam === idx ? null : idx)}
             >
               {team.name}
-            </button>
+            </Button>
           ))}
         </div>
 

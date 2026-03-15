@@ -16,9 +16,9 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
 } from "@heroicons/react/24/outline";
-import { Select, SelectItem } from "@heroui/react";
+import { Select, SelectItem, Button, Input } from "@heroui/react";
 import { TournamentSelector } from "@/components/admin/TournamentSelector";
-import { RowSkeleton, SaveSpinner } from "@/components/admin/AdminLoading";
+import { RowSkeleton } from "@/components/admin/AdminLoading";
 
 export default function TeamsPage() {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
@@ -135,26 +135,23 @@ export default function TeamsPage() {
     loadTeams();
   }
 
-  const inputCls =
-    "w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-brand-teal/50 focus:ring-1 focus:ring-brand-teal/50 transition-colors";
-  const labelCls = "block text-xs font-medium text-gray-400 mb-1.5";
-
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-white">Teams & Rosters</h1>
           <p className="text-gray-400 text-sm mt-1">
             Manage teams and player assignments after the draft
           </p>
         </div>
-        <button
-          onClick={openCreateTeam}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+        <Button
+          onPress={openCreateTeam}
+          color="primary"
+          className="shrink-0"
+          startContent={<PlusIcon className="w-4 h-4" />}
         >
-          <PlusIcon className="w-4 h-4" />
           New Team
-        </button>
+        </Button>
       </div>
 
       {/* Tournament selector */}
@@ -219,20 +216,25 @@ export default function TeamsPage() {
                     )}
                   </button>
                   <div className="flex items-center gap-2 shrink-0 ml-3">
-                    <button
-                      onClick={() => openEditTeam(team)}
-                      className="p-2 rounded-lg hover:bg-white/5 text-gray-400 hover:text-white transition-colors"
+                    <Button
+                      isIconOnly
+                      variant="light"
+                      size="sm"
+                      onPress={() => openEditTeam(team)}
                       title="Edit team"
                     >
                       <PencilSquareIcon className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteTeam(team.id)}
-                      className="p-2 rounded-lg hover:bg-red-500/10 text-gray-400 hover:text-red-400 transition-colors"
+                    </Button>
+                    <Button
+                      isIconOnly
+                      variant="light"
+                      size="sm"
+                      color="danger"
+                      onPress={() => handleDeleteTeam(team.id)}
                       title="Delete team"
                     >
                       <TrashIcon className="w-4 h-4" />
-                    </button>
+                    </Button>
                   </div>
                 </div>
 
@@ -271,24 +273,24 @@ export default function TeamsPage() {
                                 </div>
                               </div>
                               <div className="flex items-center gap-1">
-                                <button
-                                  onClick={() => toggleCaptain(tp)}
-                                  className={`text-xs px-2.5 py-1 rounded-lg transition-colors ${
-                                    tp.is_captain
-                                      ? "bg-amber-400/10 text-amber-400"
-                                      : "text-gray-500 hover:text-white hover:bg-white/5"
-                                  }`}
+                                <Button
+                                  size="sm"
+                                  variant="flat"
+                                  color={tp.is_captain ? "warning" : "default"}
+                                  onPress={() => toggleCaptain(tp)}
                                 >
                                   {tp.is_captain
                                     ? "Remove Captain"
                                     : "Make Captain"}
-                                </button>
-                                <button
-                                  onClick={() => removeFromRoster(tp)}
-                                  className="text-xs px-2.5 py-1 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-400/10 transition-colors"
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="light"
+                                  color="danger"
+                                  onPress={() => removeFromRoster(tp)}
                                 >
                                   Remove
-                                </button>
+                                </Button>
                               </div>
                             </div>
                           );
@@ -315,84 +317,66 @@ export default function TeamsPage() {
               <h2 className="text-lg font-semibold text-white">
                 {editingTeamId ? "Edit Team" : "New Team"}
               </h2>
-              <button
-                onClick={() => setShowTeamForm(false)}
-                className="text-gray-400 hover:text-white"
+              <Button
+                isIconOnly
+                variant="light"
+                onPress={() => setShowTeamForm(false)}
               >
                 <XMarkIcon className="w-5 h-5" />
-              </button>
+              </Button>
             </div>
 
             <form onSubmit={handleSaveTeam} className="space-y-4">
-              <div>
-                <label className={labelCls}>Team Name *</label>
-                <input
-                  required
-                  className={inputCls}
-                  value={teamForm.name}
-                  onChange={(e) =>
-                    setTeamForm({ ...teamForm, name: e.target.value })
-                  }
-                  placeholder="Team Alpha"
-                />
-              </div>
+              <Input
+                isRequired
+                label="Team Name"
+                variant="bordered"
+                value={teamForm.name}
+                onValueChange={(v) => setTeamForm({ ...teamForm, name: v })}
+                placeholder="Team Alpha"
+              />
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className={labelCls}>Seed</label>
-                  <input
-                    type="number"
-                    className={inputCls}
-                    value={teamForm.seed}
-                    onChange={(e) =>
-                      setTeamForm({ ...teamForm, seed: e.target.value })
-                    }
-                    placeholder="1"
-                  />
-                </div>
-                <div>
-                  <label className={labelCls}>Color</label>
-                  <input
-                    type="color"
-                    className="w-full h-[42px] rounded-xl bg-white/5 border border-white/10 cursor-pointer"
-                    value={teamForm.color || "#0ED3CF"}
-                    onChange={(e) =>
-                      setTeamForm({ ...teamForm, color: e.target.value })
-                    }
-                  />
-                </div>
-              </div>
-              <div>
-                <label className={labelCls}>Coach Name</label>
-                <input
-                  className={inputCls}
-                  value={teamForm.coach_name}
-                  onChange={(e) =>
-                    setTeamForm({ ...teamForm, coach_name: e.target.value })
-                  }
-                  placeholder="Optional"
+                <Input
+                  type="number"
+                  label="Seed"
+                  variant="bordered"
+                  value={teamForm.seed}
+                  onValueChange={(v) => setTeamForm({ ...teamForm, seed: v })}
+                  placeholder="1"
+                />
+                <Input
+                  type="color"
+                  label="Color"
+                  variant="bordered"
+                  value={teamForm.color || "#0ED3CF"}
+                  onValueChange={(v) => setTeamForm({ ...teamForm, color: v })}
+                  classNames={{ label: "mb-2" }}
                 />
               </div>
+              <Input
+                label="Coach Name"
+                variant="bordered"
+                value={teamForm.coach_name}
+                onValueChange={(v) =>
+                  setTeamForm({ ...teamForm, coach_name: v })
+                }
+                placeholder="Optional"
+              />
 
               <div className="flex justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowTeamForm(false)}
-                  className="px-4 py-2.5 rounded-xl text-sm text-gray-400 hover:text-white border border-white/10 hover:bg-white/5 transition-colors"
+                <Button
+                  variant="bordered"
+                  onPress={() => setShowTeamForm(false)}
                 >
                   Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
-                >
-                  {saving && <SaveSpinner className="w-4 h-4" />}
+                </Button>
+                <Button type="submit" color="primary" isLoading={saving}>
                   {saving
                     ? "Saving…"
                     : editingTeamId
                       ? "Update"
                       : "Create Team"}
-                </button>
+                </Button>
               </div>
             </form>
           </div>

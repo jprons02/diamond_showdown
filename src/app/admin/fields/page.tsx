@@ -8,9 +8,9 @@ import {
   TrashIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
-import { Select, SelectItem } from "@heroui/react";
+import { Select, SelectItem, Button, Input } from "@heroui/react";
 import { TournamentSelector } from "@/components/admin/TournamentSelector";
-import { RowSkeleton, SaveSpinner } from "@/components/admin/AdminLoading";
+import { RowSkeleton } from "@/components/admin/AdminLoading";
 
 export default function FieldsPage() {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
@@ -103,10 +103,6 @@ export default function FieldsPage() {
     loadFields();
   }
 
-  const inputCls =
-    "w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-brand-teal/50 focus:ring-1 focus:ring-brand-teal/50 transition-colors";
-  const labelCls = "block text-xs font-medium text-gray-400 mb-1.5";
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -116,13 +112,13 @@ export default function FieldsPage() {
             Manage diamonds and playing fields
           </p>
         </div>
-        <button
-          onClick={openCreate}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+        <Button
+          onPress={openCreate}
+          color="primary"
+          startContent={<PlusIcon className="w-4 h-4" />}
         >
-          <PlusIcon className="w-4 h-4" />
           Add Field
-        </button>
+        </Button>
       </div>
 
       <TournamentSelector
@@ -157,18 +153,23 @@ export default function FieldsPage() {
                 <span className="text-xs text-gray-600 mr-2">
                   Order: {field.sort_order}
                 </span>
-                <button
-                  onClick={() => openEdit(field)}
-                  className="p-2 rounded-lg hover:bg-white/5 text-gray-400 hover:text-white transition-colors"
+                <Button
+                  isIconOnly
+                  variant="light"
+                  size="sm"
+                  onPress={() => openEdit(field)}
                 >
                   <PencilSquareIcon className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => handleDelete(field.id)}
-                  className="p-2 rounded-lg hover:bg-red-500/10 text-gray-400 hover:text-red-400 transition-colors"
+                </Button>
+                <Button
+                  isIconOnly
+                  variant="light"
+                  size="sm"
+                  color="danger"
+                  onPress={() => handleDelete(field.id)}
                 >
                   <TrashIcon className="w-4 h-4" />
-                </button>
+                </Button>
               </div>
             </div>
           ))}
@@ -186,60 +187,44 @@ export default function FieldsPage() {
               <h2 className="text-lg font-semibold text-white">
                 {editingId ? "Edit Field" : "Add Field"}
               </h2>
-              <button
-                onClick={() => setShowForm(false)}
-                className="text-gray-400 hover:text-white"
+              <Button
+                isIconOnly
+                variant="light"
+                onPress={() => setShowForm(false)}
               >
                 <XMarkIcon className="w-5 h-5" />
-              </button>
+              </Button>
             </div>
             <form onSubmit={handleSave} className="space-y-4">
-              <div>
-                <label className={labelCls}>Field Name *</label>
-                <input
-                  required
-                  className={inputCls}
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  placeholder="Diamond A"
-                />
-              </div>
-              <div>
-                <label className={labelCls}>Sort Order</label>
-                <input
-                  type="number"
-                  className={inputCls}
-                  value={form.sort_order}
-                  onChange={(e) =>
-                    setForm({ ...form, sort_order: e.target.value })
-                  }
-                />
-              </div>
-              <div>
-                <label className={labelCls}>Notes</label>
-                <input
-                  className={inputCls}
-                  value={form.notes}
-                  onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                  placeholder="Outfield fence, lights, etc."
-                />
-              </div>
+              <Input
+                isRequired
+                label="Field Name"
+                variant="bordered"
+                value={form.name}
+                onValueChange={(v) => setForm({ ...form, name: v })}
+                placeholder="Diamond A"
+              />
+              <Input
+                type="number"
+                label="Sort Order"
+                variant="bordered"
+                value={form.sort_order}
+                onValueChange={(v) => setForm({ ...form, sort_order: v })}
+              />
+              <Input
+                label="Notes"
+                variant="bordered"
+                value={form.notes}
+                onValueChange={(v) => setForm({ ...form, notes: v })}
+                placeholder="Outfield fence, lights, etc."
+              />
               <div className="flex justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowForm(false)}
-                  className="px-4 py-2.5 rounded-xl text-sm text-gray-400 hover:text-white border border-white/10 hover:bg-white/5 transition-colors"
-                >
+                <Button variant="bordered" onPress={() => setShowForm(false)}>
                   Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
-                >
-                  {saving && <SaveSpinner className="w-4 h-4" />}
+                </Button>
+                <Button type="submit" color="primary" isLoading={saving}>
                   {saving ? "Saving…" : editingId ? "Update" : "Add Field"}
-                </button>
+                </Button>
               </div>
             </form>
           </div>
