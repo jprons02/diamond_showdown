@@ -19,12 +19,6 @@ const contactInfo = [
     href: `mailto:${brand.social.email}`,
   },
   {
-    icon: MapPinIcon,
-    label: "Location",
-    value: brand.tournament.location,
-    href: null,
-  },
-  {
     icon: PhoneIcon,
     label: "Phone",
     value: "(555) 123-4567",
@@ -191,7 +185,6 @@ export default function ContactPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                       <Input
                         label="Name"
-                        labelPlacement="outside"
                         variant="bordered"
                         isRequired
                         value={formData.name}
@@ -202,7 +195,6 @@ export default function ContactPage() {
                       />
                       <Input
                         label="Email"
-                        labelPlacement="outside"
                         variant="bordered"
                         type="email"
                         isRequired
@@ -215,7 +207,6 @@ export default function ContactPage() {
                     </div>
                     <Input
                       label="Subject"
-                      labelPlacement="outside"
                       variant="bordered"
                       isRequired
                       value={formData.subject}
@@ -226,7 +217,6 @@ export default function ContactPage() {
                     />
                     <Textarea
                       label="Message"
-                      labelPlacement="outside"
                       variant="bordered"
                       isRequired
                       minRows={5}
