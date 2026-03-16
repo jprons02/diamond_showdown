@@ -48,7 +48,7 @@
     min-height: 56px;
   }
   .sq-card-wrapper iframe {
-    border-radius: 0.75rem;
+    border-radius: 12px;
   }
 
   .glow-teal {
