@@ -201,6 +201,7 @@ export default function RegisterSlugPage() {
     setIsProcessing(false);
   };
 
+  /*
   const inputClassNames = {
     label: "text-sm font-medium !text-gray-300",
     inputWrapper:
@@ -217,6 +218,7 @@ export default function RegisterSlugPage() {
     listbox: "text-white",
     selectorIcon: "text-gray-400 shrink-0",
   };
+  */
 
   if (loading) {
     return (
@@ -388,36 +390,28 @@ export default function RegisterSlugPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <Input
                     label="First Name"
-                    labelPlacement="outside"
                     variant="bordered"
-                    placeholder="First name"
                     isRequired
                     value={playerData.firstName}
                     onValueChange={(val) =>
                       setPlayerData({ ...playerData, firstName: val })
                     }
-                    classNames={inputClassNames}
                   />
                   <Input
                     label="Last Name"
-                    labelPlacement="outside"
                     variant="bordered"
-                    placeholder="Last name"
                     isRequired
                     value={playerData.lastName}
                     onValueChange={(val) =>
                       setPlayerData({ ...playerData, lastName: val })
                     }
-                    classNames={inputClassNames}
                   />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <Input
                     label="Email"
-                    labelPlacement="outside"
                     variant="bordered"
                     type="email"
-                    placeholder="you@email.com"
                     isRequired
                     isInvalid={!!emailError}
                     value={playerData.email}
@@ -425,27 +419,21 @@ export default function RegisterSlugPage() {
                       setEmailError(null);
                       setPlayerData({ ...playerData, email: val });
                     }}
-                    classNames={inputClassNames}
                   />
                   <Input
                     label="Phone"
-                    labelPlacement="outside"
                     variant="bordered"
                     type="tel"
-                    placeholder="(555) 123-4567"
                     isRequired
                     value={playerData.phone}
                     onValueChange={(val) =>
                       setPlayerData({ ...playerData, phone: val })
                     }
-                    classNames={inputClassNames}
                   />
                   {/* Jersey Size */}
                   <Select
                     label="Jersey Size"
-                    labelPlacement="outside"
                     variant="bordered"
-                    placeholder="Select..."
                     isRequired
                     selectedKeys={
                       playerData.jerseySize ? [playerData.jerseySize] : []
@@ -453,10 +441,6 @@ export default function RegisterSlugPage() {
                     onSelectionChange={(keys) => {
                       const val = Array.from(keys)[0] as string;
                       setPlayerData((prev) => ({ ...prev, jerseySize: val }));
-                    }}
-                    classNames={{
-                      ...selectClassNames,
-                      label: "text-sm font-medium !text-gray-300",
                     }}
                   >
                     {jerseySizes.map((size) => (
@@ -477,9 +461,7 @@ export default function RegisterSlugPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <Select
                       label="1st Choice"
-                      labelPlacement="outside"
                       variant="bordered"
-                      placeholder="Select..."
                       isRequired
                       selectedKeys={
                         playerData.position1 ? [playerData.position1] : []
@@ -500,7 +482,6 @@ export default function RegisterSlugPage() {
                             prev.position3 === val ? "" : prev.position3,
                         }));
                       }}
-                      classNames={selectClassNames}
                       scrollShadowProps={{ hideScrollBar: false }}
                     >
                       {positions.map((pos) => (
@@ -509,9 +490,7 @@ export default function RegisterSlugPage() {
                     </Select>
                     <Select
                       label="2nd Choice"
-                      labelPlacement="outside"
                       variant="bordered"
-                      placeholder="Select..."
                       isRequired
                       selectedKeys={
                         playerData.position2 ? [playerData.position2] : []
@@ -530,7 +509,6 @@ export default function RegisterSlugPage() {
                             prev.position3 === val ? "" : prev.position3,
                         }));
                       }}
-                      classNames={selectClassNames}
                       scrollShadowProps={{ hideScrollBar: false }}
                     >
                       {positions.map((pos) => (
@@ -539,9 +517,7 @@ export default function RegisterSlugPage() {
                     </Select>
                     <Select
                       label="3rd Choice"
-                      labelPlacement="outside"
                       variant="bordered"
-                      placeholder="Select..."
                       isRequired
                       selectedKeys={
                         playerData.position3 ? [playerData.position3] : []
@@ -558,7 +534,6 @@ export default function RegisterSlugPage() {
                           position3: val,
                         }));
                       }}
-                      classNames={selectClassNames}
                       scrollShadowProps={{ hideScrollBar: false }}
                     >
                       {positions.map((pos) => (
@@ -575,7 +550,6 @@ export default function RegisterSlugPage() {
 
                 <Textarea
                   label="Additional Notes"
-                  labelPlacement="outside"
                   variant="bordered"
                   minRows={3}
                   placeholder="Anything else we should know?"
@@ -583,10 +557,6 @@ export default function RegisterSlugPage() {
                   onValueChange={(val) =>
                     setPlayerData({ ...playerData, notes: val })
                   }
-                  classNames={{
-                    ...inputClassNames,
-                    inputWrapper: `${inputClassNames.inputWrapper} !h-auto`,
-                  }}
                 />
                 <Button
                   type="submit"
