@@ -19,6 +19,8 @@ export const metadata: Metadata = {
   description: `Browse available ${brand.name} tournaments and view brackets, drafts, rules, and more.`,
 };
 
+export const revalidate = 0;
+
 const statusConfig: Record<
   string,
   { label: string; color: string; bg: string }
