@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { LockClosedIcon } from "@heroicons/react/24/outline";
+import { LockClosedIcon, CreditCardIcon } from "@heroicons/react/24/outline";
 import { Button, Spinner } from "@heroui/react";
 
 // ---------------------------------------------------------------------------
@@ -50,10 +50,14 @@ export default function SquarePaymentForm({
   const cardRef = useRef<SquareCard | null>(null);
   const initializedRef = useRef(false);
 
-  const appId = process.env.NEXT_PUBLIC_SQUARE_APP_ID!;
-  const locationId = process.env.NEXT_PUBLIC_SQUARE_LOCATION_ID!;
-  // Sandbox App IDs always start with "sandbox-", so no extra env var needed
-  const isSandbox = appId?.startsWith("sandbox-") ?? true;
+  const isProd = process.env.NEXT_PUBLIC_SQUARE_ENVIRONMENT === "production";
+  const appId = isProd
+    ? process.env.NEXT_PUBLIC_SQUARE_PRODUCTION_APPLICATION_ID!
+    : process.env.NEXT_PUBLIC_SQUARE_SANDBOX_APPLICATION_ID!;
+  const locationId = isProd
+    ? process.env.NEXT_PUBLIC_SQUARE_PRODUCTION_LOCATION_ID!
+    : process.env.NEXT_PUBLIC_SQUARE_SANDBOX_LOCATION_ID!;
+  const isSandbox = !isProd;
 
   const initCard = async () => {
     if (initializedRef.current || !window.Square) return;
@@ -65,13 +69,19 @@ export default function SquarePaymentForm({
         style: {
           ".input-container": {
             borderColor: "rgba(255,255,255,0.10)",
-            borderRadius: "0.75rem",
+            borderRadius: "12px",
           },
           ".input-container.is-focus": {
             borderColor: "rgba(14,211,207,0.5)",
           },
-          input: { color: "#ffffff", fontSize: "14px" },
-          "input::placeholder": { color: "#6b7280" },
+          ".input-container.is-error": {
+            borderColor: "rgba(248,113,113,0.5)",
+          },
+          input: {
+            color: "#1a1a2e",
+            fontSize: "14px",
+          },
+          "input::placeholder": { color: "#9ca3af" },
           ".message-text": { color: "#f87171" },
           ".message-icon": { color: "#f87171" },
         },
@@ -167,10 +177,18 @@ export default function SquarePaymentForm({
       )}
 
       {/* Square card widget mount point */}
-      <div
-        id="sq-card-container"
-        className={cardReady ? "sq-card-wrapper" : "hidden"}
-      />
+      <div className="space-y-1.5">
+        {/*cardReady && (
+          <label className="flex items-center gap-1.5 text-sm font-medium text-gray-300">
+            <CreditCardIcon className="w-4 h-4 text-gray-400" />
+            Card Details
+          </label>
+        )*/}
+        <div
+          id="sq-card-container"
+          className={cardReady ? "sq-card-wrapper" : "hidden"}
+        />
+      </div>
 
       {/* Error message */}
       {error && (

@@ -46,9 +46,11 @@
   /* Square Web Payments SDK card widget container */
   .sq-card-wrapper {
     min-height: 56px;
+    margin: 0px !important;
+    display: block !important;
   }
   .sq-card-wrapper iframe {
-    border-radius: 0.75rem;
+    border-radius: 12px;
   }
 
   .glow-teal {
