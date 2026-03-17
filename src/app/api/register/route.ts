@@ -3,12 +3,16 @@ import { SquareClient, SquareEnvironment, SquareError } from "square";
 import { randomUUID } from "crypto";
 import { createServiceClient } from "@/lib/supabase/server";
 
+const isProd = process.env.NEXT_PUBLIC_SQUARE_ENVIRONMENT === "production";
+const isSandbox = !isProd;
+
 const client = new SquareClient({
-  token: process.env.SQUARE_ACCESS_TOKEN,
-  environment:
-    process.env.SQUARE_ENVIRONMENT === "production"
-      ? SquareEnvironment.Production
-      : SquareEnvironment.Sandbox,
+  token: isProd
+    ? process.env.SQUARE_PRODUCTION_ACCESS_TOKEN
+    : process.env.SQUARE_SANDBOX_ACCESS_TOKEN,
+  environment: isProd
+    ? SquareEnvironment.Production
+    : SquareEnvironment.Sandbox,
 });
 
 export async function POST(req: NextRequest) {
@@ -237,7 +241,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       paymentId: payment.id,
-      receiptUrl: payment.receiptUrl ?? null,
+      receiptUrl: payment.receiptUrl
+        ? isSandbox
+          ? payment.receiptUrl.replace("squareup.com", "squareupsandbox.com")
+          : payment.receiptUrl
+        : null,
     });
   } catch (error: unknown) {
     if (error instanceof SquareError) {
