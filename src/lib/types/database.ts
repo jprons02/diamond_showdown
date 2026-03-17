@@ -48,6 +48,7 @@ export type Tournament = {
   name: string;
   slug: string;
   event_date: string | null;
+  event_end_date: string | null;
   location_name: string | null;
   location_address: string | null;
   registration_open: string | null;

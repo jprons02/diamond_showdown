@@ -309,11 +309,27 @@ export default function RegisterSlugPage() {
             <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 text-sm text-gray-200">
               <CalendarDaysIcon className="w-4 h-4 text-brand-teal" />
               {tournament?.event_date
-                ? new Date(tournament.event_date).toLocaleDateString("en-US", {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                  })
+                ? tournament.event_end_date &&
+                  tournament.event_end_date !== tournament.event_date
+                  ? (() => {
+                      const s = new Date(tournament.event_date);
+                      const e = new Date(tournament.event_end_date);
+                      if (
+                        s.getUTCMonth() === e.getUTCMonth() &&
+                        s.getUTCFullYear() === e.getUTCFullYear()
+                      ) {
+                        return `${s.toLocaleDateString("en-US", { month: "long", day: "numeric" })}–${e.getUTCDate()}, ${e.getUTCFullYear()}`;
+                      }
+                      return `${s.toLocaleDateString("en-US", { month: "long", day: "numeric" })} – ${e.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`;
+                    })()
+                  : new Date(tournament.event_date).toLocaleDateString(
+                      "en-US",
+                      {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                      },
+                    )
                 : "Date TBD"}
             </span>
             <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 text-sm text-gray-200">

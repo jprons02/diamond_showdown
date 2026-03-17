@@ -48,6 +48,7 @@ interface TournamentFormData {
   name: string;
   slug: string;
   event_date: string;
+  event_end_date: string;
   location_name: string;
   location_address: string;
   registration_open: string;
@@ -65,6 +66,7 @@ const EMPTY_FORM: TournamentFormData = {
   name: "",
   slug: "",
   event_date: "",
+  event_end_date: "",
   location_name: "",
   location_address: "",
   registration_open: "",
@@ -139,6 +141,7 @@ export default function TournamentsPage() {
       name: t.name,
       slug: t.slug,
       event_date: t.event_date ?? "",
+      event_end_date: t.event_end_date ?? "",
       location_name: t.location_name ?? "",
       location_address: t.location_address ?? "",
       registration_open: t.registration_open?.slice(0, 16) ?? "",
@@ -163,7 +166,12 @@ export default function TournamentsPage() {
       registration_close,
       draft_datetime,
       event_date,
+      event_end_date,
     } = data;
+
+    if (event_end_date && event_date && event_end_date < event_date) {
+      errors.event_end_date = "End date must be on or after the start date.";
+    }
 
     if (
       registration_open &&
@@ -213,6 +221,7 @@ export default function TournamentsPage() {
       name: form.name,
       slug: form.slug || slugify(form.name),
       event_date: form.event_date || null,
+      event_end_date: form.event_end_date || null,
       location_name: form.location_name || null,
       location_address: form.location_address || null,
       registration_open: form.registration_open || null,
@@ -310,6 +319,9 @@ export default function TournamentsPage() {
                   {t.event_date
                     ? new Date(t.event_date + "T00:00:00").toLocaleDateString()
                     : "No date set"}
+                  {t.event_end_date && t.event_end_date !== t.event_date
+                    ? ` – ${new Date(t.event_end_date + "T00:00:00").toLocaleDateString()}`
+                    : ""}
                   {t.location_name ? ` • ${t.location_name}` : ""}
                   {t.max_players ? ` • ${t.max_players} max players` : ""}
                 </p>
@@ -389,7 +401,7 @@ export default function TournamentsPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <DatePicker
-                    label="Event Date"
+                    label="Event Start Date"
                     granularity="day"
                     variant="bordered"
                     isInvalid={!!formErrors.event_date}
@@ -405,6 +417,27 @@ export default function TournamentsPage() {
                     }}
                   />
                 </div>
+                <div>
+                  <DatePicker
+                    label="Event End Date"
+                    granularity="day"
+                    variant="bordered"
+                    isInvalid={!!formErrors.event_end_date}
+                    errorMessage={formErrors.event_end_date}
+                    value={toCalendarDate(form.event_end_date)}
+                    onChange={(val) => {
+                      const updated = {
+                        ...form,
+                        event_end_date: val ? val.toString() : "",
+                      };
+                      setForm(updated);
+                      setFormErrors(validateForm(updated));
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Select
                     label="Status"
