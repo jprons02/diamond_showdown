@@ -56,6 +56,22 @@ function formatDate(dateStr: string | null) {
   });
 }
 
+function formatDateRange(start: string | null, end: string | null): string {
+  if (!start) return "TBD";
+  const s = new Date(start);
+  if (!end || end === start) return formatDate(start);
+  const e = new Date(end);
+  // Same month & year: "June 20–22, 2026"
+  if (
+    s.getUTCMonth() === e.getUTCMonth() &&
+    s.getUTCFullYear() === e.getUTCFullYear()
+  ) {
+    return `${s.toLocaleDateString("en-US", { month: "long", day: "numeric" })}–${e.getUTCDate()}, ${e.getUTCFullYear()}`;
+  }
+  // Different months: "May 31 – June 1, 2026"
+  return `${s.toLocaleDateString("en-US", { month: "long", day: "numeric" })} – ${e.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`;
+}
+
 function TournamentCard({ tournament }: { tournament: Tournament }) {
   const status = statusConfig[tournament.status] ?? statusConfig.closed;
 
@@ -96,7 +112,12 @@ function TournamentCard({ tournament }: { tournament: Tournament }) {
         <div className="space-y-3">
           <div className="flex items-center gap-3 text-sm text-gray-400">
             <CalendarDaysIcon className="w-4.5 h-4.5 text-brand-teal flex-shrink-0" />
-            <span>{formatDate(tournament.event_date)}</span>
+            <span>
+              {formatDateRange(
+                tournament.event_date,
+                tournament.event_end_date,
+              )}
+            </span>
           </div>
           <div className="flex items-center gap-3 text-sm text-gray-400">
             <MapPinIcon className="w-4.5 h-4.5 text-brand-teal flex-shrink-0" />
