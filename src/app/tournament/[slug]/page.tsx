@@ -44,6 +44,20 @@ function formatDate(dateStr: string | null) {
   });
 }
 
+function formatDateRange(start: string | null, end: string | null): string {
+  if (!start) return "TBD";
+  if (!end || end === start) return formatDate(start);
+  const s = new Date(start);
+  const e = new Date(end);
+  if (
+    s.getUTCMonth() === e.getUTCMonth() &&
+    s.getUTCFullYear() === e.getUTCFullYear()
+  ) {
+    return `${s.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}–${e.getUTCDate()}, ${e.getUTCFullYear()}`;
+  }
+  return `${s.toLocaleDateString("en-US", { month: "long", day: "numeric" })} – ${e.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`;
+}
+
 export default async function TournamentDetailPage({
   params,
 }: {
@@ -114,7 +128,7 @@ export default async function TournamentDetailPage({
           <div className="flex flex-wrap gap-4 text-sm text-gray-400">
             <div className="flex items-center gap-2">
               <CalendarDaysIcon className="w-4.5 h-4.5 text-brand-teal" />
-              <span>{formatDate(t.event_date)}</span>
+              <span>{formatDateRange(t.event_date, t.event_end_date)}</span>
             </div>
             <div className="flex items-center gap-2">
               <MapPinIcon className="w-4.5 h-4.5 text-brand-teal" />
