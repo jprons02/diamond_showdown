@@ -178,12 +178,12 @@ export default function SquarePaymentForm({
 
       {/* Square card widget mount point */}
       <div className="space-y-1.5">
-        {cardReady && (
+        {/*cardReady && (
           <label className="flex items-center gap-1.5 text-sm font-medium text-gray-300">
             <CreditCardIcon className="w-4 h-4 text-gray-400" />
             Card Details
           </label>
-        )}
+        )*/}
         <div
           id="sq-card-container"
           className={cardReady ? "sq-card-wrapper" : "hidden"}
