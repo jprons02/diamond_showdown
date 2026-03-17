@@ -384,17 +384,22 @@ export default function TournamentsPage() {
                     setForm({
                       ...form,
                       name: val,
-                      slug: form.slug || slugify(val),
+                      // Only auto-update slug when creating, not when editing
+                      slug: editingId ? form.slug : slugify(val),
                     })
                   }
                   placeholder="Spring Classic 2026"
                 />
                 <Input
-                  label="Slug"
+                  label="URL Slug"
                   variant="bordered"
-                  value={form.slug}
-                  onValueChange={(val) => setForm({ ...form, slug: val })}
-                  placeholder="spring-classic-2026"
+                  isReadOnly
+                  value={editingId ? form.slug : slugify(form.name)}
+                  description="Auto-generated from the tournament name"
+                  classNames={{
+                    input: "text-gray-400",
+                    description: "text-gray-600 text-xs",
+                  }}
                 />
               </div>
 
