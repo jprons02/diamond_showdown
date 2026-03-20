@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { Tournament, Game } from "@/lib/types/database";
 import {
-  TrophyIcon,
   UserGroupIcon,
   PlayIcon,
   ClipboardDocumentCheckIcon,
@@ -155,17 +154,6 @@ export default function AdminDashboardPage() {
       color: "text-amber-400",
       bg: "bg-amber-400/10",
     },
-    {
-      label: "Tournaments",
-      value: stats?.totalTournaments ?? 0,
-      sub: stats?.activeTournament
-        ? stats.activeTournament.name
-        : "None active",
-      icon: TrophyIcon,
-      href: "/admin/tournaments",
-      color: "text-purple-400",
-      bg: "bg-purple-400/10",
-    },
   ];
 
   return (
@@ -179,7 +167,7 @@ export default function AdminDashboardPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {statCards.map((card) => {
           const Icon = card.icon;
           return (
@@ -208,98 +196,52 @@ export default function AdminDashboardPage() {
         })}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="rounded-2xl bg-brand-surface border border-white/5 p-6">
-          <h2 className="text-lg font-semibold text-white mb-4">
-            Quick Actions
-          </h2>
-          <div className="space-y-2">
-            {[
-              {
-                label: "Enter Scores",
-                href: "/admin/games",
-                desc: "Fast score entry for current games",
-              },
-              {
-                label: "Manage Check-In",
-                href: "/admin/check-in",
-                desc: "Mark teams as arrived",
-              },
-              {
-                label: "Post Announcement",
-                href: "/admin/announcements",
-                desc: "Send update to players",
-              },
-              {
-                label: "View Registrations",
-                href: "/admin/registrations",
-                desc: "Review and approve sign-ups",
-              },
-            ].map((action) => (
-              <Link
-                key={action.href}
-                href={action.href}
-                className="flex items-center justify-between p-3 rounded-xl hover:bg-white/5 transition-colors group"
+      <div className="rounded-2xl bg-brand-surface border border-white/5 p-6">
+        <h2 className="text-lg font-semibold text-white mb-4">
+          Upcoming Games
+        </h2>
+        {stats?.upcomingGames && stats.upcomingGames.length > 0 ? (
+          <div className="space-y-3">
+            {stats.upcomingGames.map((game) => (
+              <div
+                key={game.id}
+                className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5"
               >
                 <div>
-                  <p className="text-sm font-medium text-white group-hover:text-brand-teal transition-colors">
-                    {action.label}
+                  <p className="text-sm text-white">
+                    Game #{game.game_number ?? "—"}
                   </p>
-                  <p className="text-xs text-gray-500">{action.desc}</p>
+                  <p className="text-xs text-gray-500">
+                    {game.round_name ?? game.game_type} •{" "}
+                    {game.start_time
+                      ? new Date(game.start_time).toLocaleTimeString([], {
+                          hour: "numeric",
+                          minute: "2-digit",
+                        })
+                      : "TBD"}
+                  </p>
                 </div>
-                <ArrowRightIcon className="w-4 h-4 text-gray-600 group-hover:text-brand-teal transition-colors" />
-              </Link>
+                <span
+                  className={`text-xs font-medium px-2.5 py-1 rounded-full ${
+                    game.status === "in_progress"
+                      ? "bg-amber-400/10 text-amber-400"
+                      : "bg-white/5 text-gray-400"
+                  }`}
+                >
+                  {game.status === "in_progress" ? "Live" : "Scheduled"}
+                </span>
+              </div>
             ))}
           </div>
-        </div>
-
-        <div className="rounded-2xl bg-brand-surface border border-white/5 p-6">
-          <h2 className="text-lg font-semibold text-white mb-4">
-            Upcoming Games
-          </h2>
-          {stats?.upcomingGames && stats.upcomingGames.length > 0 ? (
-            <div className="space-y-3">
-              {stats.upcomingGames.map((game) => (
-                <div
-                  key={game.id}
-                  className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5"
-                >
-                  <div>
-                    <p className="text-sm text-white">
-                      Game #{game.game_number ?? "—"}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {game.round_name ?? game.game_type} •{" "}
-                      {game.start_time
-                        ? new Date(game.start_time).toLocaleTimeString([], {
-                            hour: "numeric",
-                            minute: "2-digit",
-                          })
-                        : "TBD"}
-                    </p>
-                  </div>
-                  <span
-                    className={`text-xs font-medium px-2.5 py-1 rounded-full ${
-                      game.status === "in_progress"
-                        ? "bg-amber-400/10 text-amber-400"
-                        : "bg-white/5 text-gray-400"
-                    }`}
-                  >
-                    {game.status === "in_progress" ? "Live" : "Scheduled"}
-                  </span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <ExclamationTriangleIcon className="w-8 h-8 text-gray-600 mb-2" />
-              <p className="text-sm text-gray-500">No upcoming games</p>
-              <p className="text-xs text-gray-600 mt-1">
-                Schedule games from the Games &amp; Scores page
-              </p>
-            </div>
-          )}
-        </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+            <ExclamationTriangleIcon className="w-8 h-8 text-gray-600 mb-2" />
+            <p className="text-sm text-gray-500">No upcoming games</p>
+            <p className="text-xs text-gray-600 mt-1">
+              Schedule games from the Games &amp; Scores page
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
