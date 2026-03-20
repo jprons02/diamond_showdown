@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
     // ── 1. Look up tournament ──────────────────────────────────
     const { data: tournament, error: tournamentError } = await supabase
       .from("tournaments")
-      .select("id, entry_fee, status")
+      .select("id, entry_fee, status, max_players, registration_close")
       .eq("slug", tournamentSlug)
       .single();
 
@@ -95,6 +95,39 @@ export async function POST(req: NextRequest) {
         { error: "Registration is not currently open for this tournament." },
         { status: 400 },
       );
+    }
+
+    // ── 1b. Capacity check ─────────────────────────────────────
+    if (tournament.max_players != null) {
+      const { count } = await supabase
+        .from("registrations")
+        .select("id", { count: "exact", head: true })
+        .eq("tournament_id", tournament.id)
+        .not("registration_status", "in", '("cancelled","refunded")');
+
+      if (count != null && count >= tournament.max_players) {
+        return NextResponse.json(
+          {
+            error: "This tournament has reached maximum capacity.",
+            code: "CAPACITY_FULL",
+          },
+          { status: 400 },
+        );
+      }
+    }
+
+    // ── 1c. Registration window check ──────────────────────────
+    if (tournament.registration_close) {
+      const closeDate = new Date(tournament.registration_close);
+      if (new Date() > closeDate) {
+        return NextResponse.json(
+          {
+            error: "The registration window for this tournament has closed.",
+            code: "REGISTRATION_CLOSED",
+          },
+          { status: 400 },
+        );
+      }
     }
 
     // ── 2. Duplicate-registration check (before charging) ──────

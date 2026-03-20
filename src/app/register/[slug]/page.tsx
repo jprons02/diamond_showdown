@@ -70,6 +70,7 @@ export default function RegisterSlugPage() {
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFoundState, setNotFoundState] = useState(false);
+  const [blockedReason, setBlockedReason] = useState<string | null>(null);
 
   // "info" → filling out player info
   // "payment" → Square card form
@@ -92,12 +93,43 @@ export default function RegisterSlugPage() {
       .select("*")
       .eq("slug", slug)
       .single()
-      .then(({ data, error }) => {
+      .then(async ({ data, error }) => {
         if (error || !data) {
           setNotFoundState(true);
-        } else {
-          setTournament(data as Tournament);
+          setLoading(false);
+          return;
         }
+
+        const t = data as Tournament;
+        setTournament(t);
+
+        // Check capacity first
+        if (t.max_players != null) {
+          const { count } = await supabase
+            .from("registrations")
+            .select("id", { count: "exact", head: true })
+            .eq("tournament_id", t.id)
+            .not("registration_status", "in", '("cancelled","refunded")');
+
+          if (count != null && count >= t.max_players) {
+            setBlockedReason("This tournament has reached maximum capacity.");
+            setLoading(false);
+            return;
+          }
+        }
+
+        // Then check registration window
+        if (t.registration_close) {
+          const closeDate = new Date(t.registration_close);
+          if (new Date() > closeDate) {
+            setBlockedReason(
+              "The registration window for this tournament has closed.",
+            );
+            setLoading(false);
+            return;
+          }
+        }
+
         setLoading(false);
       });
   }, [slug]);
@@ -229,6 +261,32 @@ export default function RegisterSlugPage() {
   }
 
   const tournamentName = tournament?.name ?? brand.name;
+
+  // ---- BLOCKED SCREEN (capacity full or registration closed) ----
+  if (blockedReason) {
+    return (
+      <div className="bg-gradient-dark min-h-[70vh] flex items-center justify-center">
+        <div className="max-w-md mx-auto px-4 text-center">
+          <div className="w-20 h-20 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-6">
+            <CalendarDaysIcon className="w-10 h-10 text-red-400" />
+          </div>
+          <h1 className="text-3xl font-bold text-white mb-4">
+            Registration Unavailable
+          </h1>
+          <p className="text-gray-400 mb-6">{blockedReason}</p>
+          <Button
+            as={Link}
+            href="/register"
+            color="primary"
+            size="lg"
+            className="font-semibold shadow-lg shadow-brand-teal/25"
+          >
+            Browse Tournaments
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   // ---- SUCCESS SCREEN ----
   if (step === "success") {

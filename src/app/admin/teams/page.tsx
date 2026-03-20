@@ -1,12 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import type {
-  Tournament,
-  Team,
-  TeamPlayer,
-  TeamWithPlayers,
-} from "@/lib/types/database";
+import type { Team, TeamPlayer, TeamWithPlayers } from "@/lib/types/database";
 import {
   PlusIcon,
   PencilSquareIcon,
@@ -17,12 +12,11 @@ import {
   ChevronUpIcon,
 } from "@heroicons/react/24/outline";
 import { Select, SelectItem, Button, Input } from "@heroui/react";
-import { TournamentSelector } from "@/components/admin/TournamentSelector";
+import { useTournament } from "@/components/admin/TournamentContext";
 import { RowSkeleton } from "@/components/admin/AdminLoading";
 
 export default function TeamsPage() {
-  const [tournaments, setTournaments] = useState<Tournament[]>([]);
-  const [selectedTournamentId, setSelectedTournamentId] = useState<string>("");
+  const { selectedId: selectedTournamentId } = useTournament();
   const [teams, setTeams] = useState<TeamWithPlayers[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedTeam, setExpandedTeam] = useState<string | null>(null);
@@ -37,22 +31,6 @@ export default function TeamsPage() {
     coach_name: "",
   });
   const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    async function loadTournaments() {
-      const res = await fetch("/api/admin/tournaments");
-      const list: Tournament[] = await res.json();
-      setTournaments(Array.isArray(list) ? list : []);
-      if (list.length > 0) {
-        const active = list.find(
-          (t) => t.status === "open" || t.status === "closed",
-        );
-        setSelectedTournamentId(active?.id ?? list[0].id);
-      }
-      setLoading(false);
-    }
-    loadTournaments();
-  }, []);
 
   const loadTeams = useCallback(async () => {
     if (!selectedTournamentId) return;
@@ -153,13 +131,6 @@ export default function TeamsPage() {
           New Team
         </Button>
       </div>
-
-      {/* Tournament selector */}
-      <TournamentSelector
-        tournaments={tournaments}
-        selectedId={selectedTournamentId}
-        onChange={setSelectedTournamentId}
-      />
 
       {/* Teams list */}
       {loading ? (

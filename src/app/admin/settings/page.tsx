@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import type { Tournament, TournamentStatus } from "@/lib/types/database";
-import { TournamentSelector } from "@/components/admin/TournamentSelector";
+import { useTournament } from "@/components/admin/TournamentContext";
 import { RowSkeleton, SaveSpinner } from "@/components/admin/AdminLoading";
 import { Button, Switch } from "@heroui/react";
 import {
@@ -70,37 +70,26 @@ const STATUS_OPTIONS: {
 ];
 
 export default function SettingsPage() {
-  const [tournaments, setTournaments] = useState<Tournament[]>([]);
-  const [selectedTournamentId, setSelectedTournamentId] = useState<string>("");
+  const { selectedId: selectedTournamentId, refresh: refreshTournaments } =
+    useTournament();
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savingKey, setSavingKey] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function load() {
-      const res = await fetch("/api/admin/tournaments");
-      const list: Tournament[] = await res.json();
-      setTournaments(Array.isArray(list) ? list : []);
-      if (list.length > 0) {
-        const active = list.find(
-          (t) => t.status === "open" || t.status === "closed",
-        );
-        setSelectedTournamentId(active?.id ?? list[0].id);
-      }
-      setLoading(false);
-    }
-    load();
-  }, []);
-
   const loadTournament = useCallback(async () => {
-    if (!selectedTournamentId) return;
+    if (!selectedTournamentId) {
+      setTournament(null);
+      return;
+    }
+    setLoading(true);
     const res = await fetch("/api/admin/tournaments");
     const list: Tournament[] = await res.json();
     const found = Array.isArray(list)
       ? (list.find((t) => t.id === selectedTournamentId) ?? null)
       : null;
     setTournament(found);
+    setLoading(false);
   }, [selectedTournamentId]);
 
   useEffect(() => {
@@ -120,6 +109,7 @@ export default function SettingsPage() {
     setTournament({ ...tournament, [key]: newValue });
     setSavingKey(null);
     setSaving(false);
+    refreshTournaments();
   }
 
   async function handleStatusChange(status: TournamentStatus) {
@@ -134,6 +124,7 @@ export default function SettingsPage() {
     setTournament({ ...tournament, status });
     setSavingKey(null);
     setSaving(false);
+    refreshTournaments();
   }
 
   return (
@@ -144,12 +135,6 @@ export default function SettingsPage() {
           Control what&apos;s visible on the public site
         </p>
       </div>
-
-      <TournamentSelector
-        tournaments={tournaments}
-        selectedId={selectedTournamentId}
-        onChange={setSelectedTournamentId}
-      />
 
       {loading || !tournament ? (
         <RowSkeleton count={3} height="h-20" />

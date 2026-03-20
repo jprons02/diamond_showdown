@@ -5,16 +5,14 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@heroui/react";
+import { useTournament } from "@/components/admin/TournamentContext";
+import { TournamentSelector } from "@/components/admin/TournamentSelector";
 import {
   HomeIcon,
   TrophyIcon,
   UserGroupIcon,
-  UsersIcon,
   PlayIcon,
-  MapPinIcon,
-  ClipboardDocumentCheckIcon,
   MegaphoneIcon,
-  Cog6ToothIcon,
   Bars3Icon,
   XMarkIcon,
   ChevronLeftIcon,
@@ -31,34 +29,21 @@ const navSections = [
     ],
   },
   {
-    heading: "Tournament",
-    items: [
-      { label: "Tournaments", href: "/admin/tournaments", icon: TrophyIcon },
-      { label: "Fields", href: "/admin/fields", icon: MapPinIcon },
-      { label: "Settings", href: "/admin/settings", icon: Cog6ToothIcon },
-    ],
-  },
-  {
-    heading: "People",
-    items: [
-      {
-        label: "Registrations",
-        href: "/admin/registrations",
-        icon: ClipboardDocumentCheckIcon,
-      },
-      { label: "Teams & Rosters", href: "/admin/teams", icon: UsersIcon },
-      { label: "Check-In", href: "/admin/check-in", icon: UserGroupIcon },
-    ],
-  },
-  {
     heading: "Game Day",
     items: [
-      { label: "Games & Scores", href: "/admin/games", icon: PlayIcon },
+      { label: "Check-In", href: "/admin/check-in", icon: UserGroupIcon },
+      { label: "Scores", href: "/admin/games", icon: PlayIcon },
       {
         label: "Announcements",
         href: "/admin/announcements",
         icon: MegaphoneIcon,
       },
+    ],
+  },
+  {
+    heading: "Manage",
+    items: [
+      { label: "Tournaments", href: "/admin/tournaments", icon: TrophyIcon },
     ],
   },
 ];
@@ -67,6 +52,7 @@ export default function AdminSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { tournaments, selectedId, setSelectedId } = useTournament();
 
   const isActive = (href: string) => {
     if (href === "/admin") return pathname === "/admin";
@@ -90,6 +76,21 @@ export default function AdminSidebar() {
           <span className="font-bold text-white text-lg">Admin</span>
         </Link>
       </div>
+
+      {/* Tournament selector */}
+      {tournaments.length > 0 && (
+        <div className="px-4 py-3 border-b border-white/5">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-1.5">
+            Tournament
+          </p>
+          <TournamentSelector
+            tournaments={tournaments}
+            selectedId={selectedId}
+            onChange={setSelectedId}
+            className="w-full"
+          />
+        </div>
+      )}
 
       {/* Navigation */}
       <div className="flex-1 overflow-y-auto px-3 py-4 space-y-5">

@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback } from "react";
 import type {
-  Tournament,
   Game,
   GameWithJoins,
   Team,
@@ -37,7 +36,7 @@ import {
 } from "@heroui/react";
 import { DatePicker } from "@heroui/date-picker";
 import { parseDateTime, type CalendarDateTime } from "@internationalized/date";
-import { TournamentSelector } from "@/components/admin/TournamentSelector";
+import { useTournament } from "@/components/admin/TournamentContext";
 import { RowSkeleton, SaveSpinner } from "@/components/admin/AdminLoading";
 
 function toCalendarDateTime(str: string): CalendarDateTime | null {
@@ -58,8 +57,12 @@ const GAME_STATUS_COLORS: Record<GameStatus, string> = {
 };
 
 export default function GamesPage() {
-  const [tournaments, setTournaments] = useState<Tournament[]>([]);
-  const [selectedTournamentId, setSelectedTournamentId] = useState<string>("");
+  const {
+    selectedId: selectedTournamentId,
+    tournaments,
+    selected: selectedTournament,
+    refresh: refreshTournaments,
+  } = useTournament();
   const [games, setGames] = useState<GameWithJoins[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
   const [fields, setFields] = useState<Field[]>([]);
@@ -91,22 +94,6 @@ export default function GamesPage() {
     start_time: "",
   });
   const [gameSaving, setGameSaving] = useState(false);
-
-  useEffect(() => {
-    async function loadTournaments() {
-      const res = await fetch("/api/admin/tournaments");
-      const list: Tournament[] = await res.json();
-      setTournaments(Array.isArray(list) ? list : []);
-      if (list.length > 0) {
-        const active = list.find(
-          (t) => t.status === "open" || t.status === "closed",
-        );
-        setSelectedTournamentId(active?.id ?? list[0].id);
-      }
-      setLoading(false);
-    }
-    loadTournaments();
-  }, []);
 
   const loadGames = useCallback(async () => {
     if (!selectedTournamentId) return;
@@ -195,8 +182,6 @@ export default function GamesPage() {
     loadGames();
   }
 
-  const selectedTournament =
-    tournaments.find((t) => t.id === selectedTournamentId) ?? null;
   const bracketPublished = selectedTournament?.bracket_published ?? false;
 
   async function handlePublishBracket() {
@@ -210,10 +195,7 @@ export default function GamesPage() {
         bracket_published: !bracketPublished,
       }),
     });
-    // Refresh tournament list so bracketPublished reflects the new value
-    const res = await fetch("/api/admin/tournaments");
-    const list: Tournament[] = await res.json();
-    setTournaments(Array.isArray(list) ? list : []);
+    await refreshTournaments();
     setBracketPublishing(false);
   }
 
@@ -515,13 +497,8 @@ export default function GamesPage() {
         </div>
       )}
 
-      {/* Tournament selector + filter */}
+      {/* Filter */}
       <div className="flex flex-col sm:flex-row gap-3 items-center">
-        <TournamentSelector
-          tournaments={tournaments}
-          selectedId={selectedTournamentId}
-          onChange={setSelectedTournamentId}
-        />
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <Select
             variant="bordered"

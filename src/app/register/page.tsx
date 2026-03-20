@@ -32,7 +32,29 @@ export default async function RegisterPage() {
     .eq("status", "open")
     .order("event_date", { ascending: true });
 
-  const list = (tournaments ?? []) as Tournament[];
+  const now = new Date();
+  const allOpen = (tournaments ?? []) as Tournament[];
+
+  // Filter out tournaments whose registration window has closed
+  const withinWindow = allOpen.filter((t) => {
+    if (!t.registration_close) return true;
+    return new Date(t.registration_close) > now;
+  });
+
+  // Get registration counts for capacity checks
+  const listWithCapacity = await Promise.all(
+    withinWindow.map(async (t) => {
+      if (t.max_players == null) return { ...t, isFull: false };
+      const { count } = await supabase
+        .from("registrations")
+        .select("id", { count: "exact", head: true })
+        .eq("tournament_id", t.id)
+        .not("registration_status", "in", '("cancelled","refunded")');
+      return { ...t, isFull: count != null && count >= t.max_players };
+    }),
+  );
+
+  const list = listWithCapacity;
 
   return (
     <div className="min-h-screen bg-gradient-dark">
@@ -58,39 +80,75 @@ export default async function RegisterPage() {
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           {list.length > 0 ? (
             <div className="space-y-4">
-              {list.map((t) => (
-                <Link
-                  key={t.id}
-                  href={`/register/${t.slug}`}
-                  className="group relative block rounded-2xl border border-white/5 bg-brand-surface/50 p-6 sm:p-8 transition-all duration-500 hover:border-brand-teal/30 hover:bg-brand-surface hover:-translate-y-1 hover:shadow-lg hover:shadow-brand-teal/10"
-                >
-                  <div className="absolute inset-0 rounded-2xl bg-brand-teal/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  <div className="relative flex items-center justify-between gap-4">
-                    <div className="min-w-0 flex-1">
-                      <h2 className="text-xl font-bold text-white mb-3 group-hover:text-brand-teal transition-colors">
-                        {t.name}
-                      </h2>
-                      <div className="flex flex-wrap gap-x-5 gap-y-2">
-                        <span className="inline-flex items-center gap-2 text-sm text-gray-400">
-                          <CalendarDaysIcon className="w-4 h-4 text-brand-teal flex-shrink-0" />
-                          {formatDate(t.event_date)}
-                        </span>
-                        <span className="inline-flex items-center gap-2 text-sm text-gray-400">
-                          <MapPinIcon className="w-4 h-4 text-brand-teal flex-shrink-0" />
-                          {t.location_name || "Location TBD"}
-                        </span>
-                        {t.entry_fee != null && (
-                          <span className="inline-flex items-center gap-2 text-sm text-gray-400">
-                            <TrophyIcon className="w-4 h-4 text-brand-teal flex-shrink-0" />
-                            ${Number(t.entry_fee).toFixed(0)} entry
+              {list.map((t) =>
+                t.isFull ? (
+                  <div
+                    key={t.id}
+                    className="relative block rounded-2xl border border-white/5 bg-brand-surface/30 p-6 sm:p-8 opacity-60 cursor-not-allowed"
+                  >
+                    <div className="relative flex items-center justify-between gap-4">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-3 mb-3">
+                          <h2 className="text-xl font-bold text-white">
+                            {t.name}
+                          </h2>
+                          <span className="px-2.5 py-0.5 rounded-full bg-red-500/20 border border-red-500/30 text-xs font-semibold text-red-400 uppercase tracking-wide">
+                            Full
                           </span>
-                        )}
+                        </div>
+                        <div className="flex flex-wrap gap-x-5 gap-y-2">
+                          <span className="inline-flex items-center gap-2 text-sm text-gray-400">
+                            <CalendarDaysIcon className="w-4 h-4 text-brand-teal flex-shrink-0" />
+                            {formatDate(t.event_date)}
+                          </span>
+                          <span className="inline-flex items-center gap-2 text-sm text-gray-400">
+                            <MapPinIcon className="w-4 h-4 text-brand-teal flex-shrink-0" />
+                            {t.location_name || "Location TBD"}
+                          </span>
+                          {t.entry_fee != null && (
+                            <span className="inline-flex items-center gap-2 text-sm text-gray-400">
+                              <TrophyIcon className="w-4 h-4 text-brand-teal flex-shrink-0" />
+                              ${Number(t.entry_fee).toFixed(0)} entry
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                    <ChevronRightIcon className="w-5 h-5 text-gray-600 group-hover:text-brand-teal group-hover:translate-x-1 transition-all duration-300 flex-shrink-0" />
                   </div>
-                </Link>
-              ))}
+                ) : (
+                  <Link
+                    key={t.id}
+                    href={`/register/${t.slug}`}
+                    className="group relative block rounded-2xl border border-white/5 bg-brand-surface/50 p-6 sm:p-8 transition-all duration-500 hover:border-brand-teal/30 hover:bg-brand-surface hover:-translate-y-1 hover:shadow-lg hover:shadow-brand-teal/10"
+                  >
+                    <div className="absolute inset-0 rounded-2xl bg-brand-teal/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    <div className="relative flex items-center justify-between gap-4">
+                      <div className="min-w-0 flex-1">
+                        <h2 className="text-xl font-bold text-white mb-3 group-hover:text-brand-teal transition-colors">
+                          {t.name}
+                        </h2>
+                        <div className="flex flex-wrap gap-x-5 gap-y-2">
+                          <span className="inline-flex items-center gap-2 text-sm text-gray-400">
+                            <CalendarDaysIcon className="w-4 h-4 text-brand-teal flex-shrink-0" />
+                            {formatDate(t.event_date)}
+                          </span>
+                          <span className="inline-flex items-center gap-2 text-sm text-gray-400">
+                            <MapPinIcon className="w-4 h-4 text-brand-teal flex-shrink-0" />
+                            {t.location_name || "Location TBD"}
+                          </span>
+                          {t.entry_fee != null && (
+                            <span className="inline-flex items-center gap-2 text-sm text-gray-400">
+                              <TrophyIcon className="w-4 h-4 text-brand-teal flex-shrink-0" />
+                              ${Number(t.entry_fee).toFixed(0)} entry
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <ChevronRightIcon className="w-5 h-5 text-gray-600 group-hover:text-brand-teal group-hover:translate-x-1 transition-all duration-300 flex-shrink-0" />
+                    </div>
+                  </Link>
+                ),
+              )}
             </div>
           ) : (
             <div className="text-center py-20">

@@ -1,11 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import type {
-  Tournament,
-  Announcement,
-  AnnouncementAudience,
-} from "@/lib/types/database";
+import type { Announcement, AnnouncementAudience } from "@/lib/types/database";
 import {
   PlusIcon,
   PencilSquareIcon,
@@ -14,13 +10,12 @@ import {
   EyeIcon,
   EyeSlashIcon,
 } from "@heroicons/react/24/outline";
-import { TournamentSelector } from "@/components/admin/TournamentSelector";
+import { useTournament } from "@/components/admin/TournamentContext";
 import { Select, SelectItem, Input, Textarea, Button } from "@heroui/react";
 import { RowSkeleton, SaveSpinner } from "@/components/admin/AdminLoading";
 
 export default function AnnouncementsPage() {
-  const [tournaments, setTournaments] = useState<Tournament[]>([]);
-  const [selectedTournamentId, setSelectedTournamentId] = useState<string>("");
+  const { selectedId: selectedTournamentId } = useTournament();
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -32,22 +27,6 @@ export default function AnnouncementsPage() {
     audience: "all" as AnnouncementAudience,
   });
   const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    async function load() {
-      const res = await fetch("/api/admin/tournaments");
-      const list: Tournament[] = await res.json();
-      setTournaments(Array.isArray(list) ? list : []);
-      if (list.length > 0) {
-        const active = list.find(
-          (t) => t.status === "open" || t.status === "closed",
-        );
-        setSelectedTournamentId(active?.id ?? list[0].id);
-      }
-      setLoading(false);
-    }
-    load();
-  }, []);
 
   const loadAnnouncements = useCallback(async () => {
     if (!selectedTournamentId) return;
@@ -140,12 +119,6 @@ export default function AnnouncementsPage() {
           New Announcement
         </Button>
       </div>
-
-      <TournamentSelector
-        tournaments={tournaments}
-        selectedId={selectedTournamentId}
-        onChange={setSelectedTournamentId}
-      />
 
       {loading ? (
         <RowSkeleton count={3} height="h-24" />

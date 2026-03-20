@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback } from "react";
 import type {
-  Tournament,
   RegistrationWithJoins,
   RegistrationStatus,
   PaymentStatus,
@@ -13,7 +12,7 @@ import {
   XCircleIcon,
 } from "@heroicons/react/24/outline";
 import { Select, SelectItem, Input } from "@heroui/react";
-import { TournamentSelector } from "@/components/admin/TournamentSelector";
+import { useTournament } from "@/components/admin/TournamentContext";
 import { TableSkeleton } from "@/components/admin/AdminLoading";
 
 const REG_STATUS_COLORS: Record<RegistrationStatus, string> = {
@@ -34,31 +33,13 @@ const PAY_STATUS_COLORS: Record<PaymentStatus, string> = {
 };
 
 export default function RegistrationsPage() {
-  const [tournaments, setTournaments] = useState<Tournament[]>([]);
-  const [selectedTournamentId, setSelectedTournamentId] = useState<string>("");
+  const { selectedId: selectedTournamentId } = useTournament();
   const [registrations, setRegistrations] = useState<RegistrationWithJoins[]>(
     [],
   );
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-
-  // Load tournaments for the selector
-  useEffect(() => {
-    async function loadTournaments() {
-      const res = await fetch("/api/admin/tournaments");
-      const list: Tournament[] = await res.json();
-      setTournaments(Array.isArray(list) ? list : []);
-      if (list.length > 0) {
-        const active = list.find(
-          (t) => t.status === "open" || t.status === "closed",
-        );
-        setSelectedTournamentId(active?.id ?? list[0].id);
-      }
-      setLoading(false);
-    }
-    loadTournaments();
-  }, []);
 
   const loadRegistrations = useCallback(async () => {
     if (!selectedTournamentId) return;
@@ -126,14 +107,8 @@ export default function RegistrationsPage() {
         </p>
       </div>
 
-      {/* Tournament selector + stats row */}
+      {/* Stats row */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <TournamentSelector
-          tournaments={tournaments}
-          selectedId={selectedTournamentId}
-          onChange={setSelectedTournamentId}
-        />
-
         <div className="flex items-center gap-4 text-xs text-gray-400">
           <span>
             <strong className="text-white">{registrations.length}</strong>{" "}

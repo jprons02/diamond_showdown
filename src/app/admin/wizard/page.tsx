@@ -2,9 +2,8 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import type { Tournament } from "@/lib/types/database";
 import type { WizardStep } from "@/app/api/admin/wizard/route";
-import { TournamentSelector } from "@/components/admin/TournamentSelector";
+import { useTournament } from "@/components/admin/TournamentContext";
 import { RowSkeleton } from "@/components/admin/AdminLoading";
 import {
   CheckCircleIcon,
@@ -83,40 +82,16 @@ function StepIcon({ status }: { status: WizardStep["status"] }) {
 }
 
 export default function WizardPage() {
-  const [tournaments, setTournaments] = useState<Tournament[]>([]);
-  const [selectedId, setSelectedId] = useState("");
+  const {
+    selectedId,
+    selected: selectedTournament,
+    tournaments,
+    loading,
+    refresh: refreshTournaments,
+  } = useTournament();
   const [steps, setSteps] = useState<WizardStep[]>([]);
-  const [loading, setLoading] = useState(true);
   const [stepsLoading, setStepsLoading] = useState(false);
   const [openDialog, setOpenDialog] = useState<string | null>(null);
-
-  // Load tournaments list
-  const loadTournaments = useCallback(async () => {
-    try {
-      const data: Tournament[] = await fetch("/api/admin/tournaments").then(
-        (r) => r.json(),
-      );
-      const list = Array.isArray(data) ? data : [];
-      setTournaments(list);
-      return list;
-    } catch (err) {
-      console.error("Failed to load tournaments:", err);
-      return [];
-    }
-  }, []);
-
-  useEffect(() => {
-    async function init() {
-      const list = await loadTournaments();
-      const active = list.find(
-        (t) => t.status === "open" || t.status === "closed",
-      );
-      if (active) setSelectedId(active.id);
-      else if (list.length > 0) setSelectedId(list[0].id);
-      setLoading(false);
-    }
-    init();
-  }, [loadTournaments]);
 
   // Load wizard steps when tournament changes
   const loadSteps = useCallback(async () => {
@@ -146,17 +121,13 @@ export default function WizardPage() {
 
   // Refresh both tournaments and steps after a dialog action
   function handleDataChange() {
-    loadTournaments();
+    refreshTournaments();
     loadSteps();
   }
 
   function closeDialog() {
     setOpenDialog(null);
   }
-
-  // The selected tournament object (needed by some dialogs)
-  const selectedTournament =
-    tournaments.find((t) => t.id === selectedId) ?? null;
 
   // Group steps by phase
   const phases: { name: string; steps: WizardStep[] }[] = [];
@@ -230,11 +201,6 @@ export default function WizardPage() {
             Step-by-step guide &mdash; follow each phase to run your tournament
           </p>
         </div>
-        <TournamentSelector
-          tournaments={tournaments}
-          selectedId={selectedId}
-          onChange={setSelectedId}
-        />
       </div>
 
       {/* Progress bar */}
