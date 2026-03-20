@@ -19,12 +19,16 @@ import {
   XMarkIcon,
   ChevronLeftIcon,
   ArrowRightOnRectangleIcon,
+  RocketLaunchIcon,
 } from "@heroicons/react/24/outline";
 
 const navSections = [
   {
     heading: null,
-    items: [{ label: "Dashboard", href: "/admin", icon: HomeIcon }],
+    items: [
+      { label: "Dashboard", href: "/admin", icon: HomeIcon },
+      { label: "Wizard", href: "/admin/wizard", icon: RocketLaunchIcon },
+    ],
   },
   {
     heading: "Tournament",
