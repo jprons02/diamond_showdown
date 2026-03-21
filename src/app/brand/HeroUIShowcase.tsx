@@ -26,6 +26,19 @@ const positions = [
   { key: "outfield", label: "Outfield" },
 ];
 
+const sampleColors = [
+  { label: "Red", value: "#EF4444" },
+  { label: "Orange", value: "#F97316" },
+  { label: "Gold", value: "#F59E0B" },
+  { label: "Green", value: "#22C55E" },
+  { label: "Teal", value: "#0ED3CF" },
+  { label: "Blue", value: "#3B82F6" },
+  { label: "Indigo", value: "#6366F1" },
+  { label: "Purple", value: "#A855F7" },
+  { label: "Pink", value: "#EC4899" },
+  { label: "Slate", value: "#64748B" },
+];
+
 export function ButtonShowcase() {
   return (
     <div className="space-y-6">
@@ -310,6 +323,52 @@ export function SampleFormShowcase() {
           <Checkbox color="primary" size="sm">
             <span className="text-sm text-gray-300">Waitlist if full</span>
           </Checkbox>
+        </div>
+      </div>
+
+      {/* Row 9 — Select with scrollbar & color swatches */}
+      <div className="pt-1 border-t border-white/5">
+        <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">
+          Scrollable Select (reference design)
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Select
+            label="Team Color"
+            variant="bordered"
+            placeholder="Pick a color"
+            scrollShadowProps={{ hideScrollBar: false }}
+            classNames={{ listboxWrapper: "max-h-44" }}
+            renderValue={(items) =>
+              items.map((item) => (
+                <div key={item.key} className="flex items-center gap-2">
+                  <div
+                    className="w-3 h-3 rounded-full border border-white/20 shrink-0"
+                    style={{
+                      backgroundColor: sampleColors.find(
+                        (c) => c.value === item.key,
+                      )?.value,
+                    }}
+                  />
+                  <span>{item.textValue}</span>
+                </div>
+              ))
+            }
+          >
+            {sampleColors.map((c) => (
+              <SelectItem
+                key={c.value}
+                textValue={c.label}
+                startContent={
+                  <div
+                    className="w-3 h-3 rounded-full border border-white/20 shrink-0"
+                    style={{ backgroundColor: c.value }}
+                  />
+                }
+              >
+                {c.label}
+              </SelectItem>
+            ))}
+          </Select>
         </div>
       </div>
 

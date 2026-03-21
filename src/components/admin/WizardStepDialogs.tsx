@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { Button, Input, Switch, Select, SelectItem } from "@heroui/react";
+import { DatePicker } from "@heroui/date-picker";
+import { parseDateTime, type CalendarDateTime } from "@internationalized/date";
 import {
   XMarkIcon,
   PlusIcon,
@@ -17,6 +19,16 @@ import {
   ArrowTopRightOnSquareIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
+
+function toCalendarDateTime(str: string): CalendarDateTime | null {
+  if (!str) return null;
+  try {
+    return parseDateTime(str.length === 16 ? str + ":00" : str);
+  } catch {
+    return null;
+  }
+}
+
 import type {
   Tournament,
   TournamentStatus,
@@ -529,6 +541,19 @@ export function RegistrationsDialog({
    4. CREATE TEAMS
    ═══════════════════════════════════════════════════════════════ */
 
+const TEAM_COLORS = [
+  { label: "Red", value: "#EF4444" },
+  { label: "Orange", value: "#F97316" },
+  { label: "Gold", value: "#F59E0B" },
+  { label: "Green", value: "#22C55E" },
+  { label: "Teal", value: "#0ED3CF" },
+  { label: "Blue", value: "#3B82F6" },
+  { label: "Indigo", value: "#6366F1" },
+  { label: "Purple", value: "#A855F7" },
+  { label: "Pink", value: "#EC4899" },
+  { label: "Slate", value: "#64748B" },
+];
+
 export function TeamsDialog({
   tournamentId,
   onClose,
@@ -725,14 +750,48 @@ export function TeamsDialog({
                 value={form.seed}
                 onValueChange={(v) => setForm({ ...form, seed: v })}
               />
-              <Input
+              <Select
                 size="sm"
-                type="color"
                 label="Color"
                 variant="bordered"
-                value={form.color || "#0ED3CF"}
-                onValueChange={(v) => setForm({ ...form, color: v })}
-              />
+                selectedKeys={form.color ? [form.color] : []}
+                onSelectionChange={(keys) =>
+                  setForm({
+                    ...form,
+                    color: (Array.from(keys)[0] as string) ?? "",
+                  })
+                }
+                scrollShadowProps={{ hideScrollBar: false }}
+                classNames={{
+                  listboxWrapper: "max-h-44",
+                }}
+                renderValue={(items) =>
+                  items.map((item) => (
+                    <div key={item.key} className="flex items-center gap-2">
+                      <div
+                        className="w-3 h-3 rounded-full border border-white/20 shrink-0"
+                        style={{ backgroundColor: item.key as string }}
+                      />
+                      <span>{item.textValue}</span>
+                    </div>
+                  ))
+                }
+              >
+                {TEAM_COLORS.map((c) => (
+                  <SelectItem
+                    key={c.value}
+                    textValue={c.label}
+                    startContent={
+                      <div
+                        className="w-3 h-3 rounded-full border border-white/20 shrink-0"
+                        style={{ backgroundColor: c.value }}
+                      />
+                    }
+                  >
+                    {c.label}
+                  </SelectItem>
+                ))}
+              </Select>
               <Input
                 size="sm"
                 label="Coach"
@@ -1148,13 +1207,18 @@ export function ScheduleGamesDialog({
                 <SelectItem key={f.id}>{f.name}</SelectItem>
               ))}
             </Select>
-            <Input
+            <DatePicker
               size="sm"
-              label="Start Time"
+              label="Start Date & Time"
+              granularity="minute"
               variant="bordered"
-              type="datetime-local"
-              value={form.start_time}
-              onValueChange={(v) => setForm({ ...form, start_time: v })}
+              value={toCalendarDateTime(form.start_time)}
+              onChange={(val) =>
+                setForm({
+                  ...form,
+                  start_time: val ? val.toString() : "",
+                })
+              }
             />
           </div>
           <div className="flex justify-end">
