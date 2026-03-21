@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
 import type { Field } from "@/lib/types/database";
 import {
   PlusIcon,
@@ -11,81 +10,25 @@ import {
 import { Button, Input } from "@heroui/react";
 import { useTournament } from "@/components/admin/TournamentContext";
 import { RowSkeleton } from "@/components/admin/AdminLoading";
+import { useFields } from "@/hooks/admin/useFields";
 
 export default function FieldsPage() {
   const { selectedId: selectedTournamentId, loading: tournamentsLoading } =
     useTournament();
-  const [fields, setFields] = useState<Field[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState({ name: "", sort_order: "", notes: "" });
-  const [saving, setSaving] = useState(false);
-
-  const loadFields = useCallback(async () => {
-    if (!selectedTournamentId) return;
-    setLoading(true);
-    const res = await fetch(
-      `/api/admin/fields?tournament_id=${selectedTournamentId}`,
-    );
-    const data = await res.json();
-    setFields(Array.isArray(data) ? data : []);
-    setLoading(false);
-  }, [selectedTournamentId]);
-
-  useEffect(() => {
-    loadFields();
-  }, [loadFields]);
-
-  function openCreate() {
-    setEditingId(null);
-    setForm({ name: "", sort_order: String(fields.length + 1), notes: "" });
-    setShowForm(true);
-  }
-
-  function openEdit(f: Field) {
-    setEditingId(f.id);
-    setForm({
-      name: f.name,
-      sort_order: String(f.sort_order),
-      notes: f.notes ?? "",
-    });
-    setShowForm(true);
-  }
-
-  async function handleSave(e: React.FormEvent) {
-    e.preventDefault();
-    setSaving(true);
-    const payload = {
-      tournament_id: selectedTournamentId,
-      name: form.name,
-      sort_order: parseInt(form.sort_order) || 0,
-      notes: form.notes || null,
-    };
-    if (editingId) {
-      await fetch("/api/admin/fields", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: editingId, ...payload }),
-      });
-    } else {
-      await fetch("/api/admin/fields", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-    }
-    setSaving(false);
-    setShowForm(false);
-    loadFields();
-  }
-
-  async function handleDelete(id: string) {
-    if (!confirm("Delete this field?")) return;
-    await fetch(`/api/admin/fields?id=${id}`, { method: "DELETE" });
-    loadFields();
-  }
+  const {
+    fields,
+    loading,
+    showForm,
+    setShowForm,
+    editingId,
+    form,
+    setForm,
+    saving,
+    openCreate,
+    openEdit,
+    handleSave,
+    handleDelete,
+  } = useFields(selectedTournamentId ?? "");
 
   return (
     <div className="space-y-6">

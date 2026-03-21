@@ -1,102 +1,38 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import type { Team, TeamPlayer, TeamWithPlayers } from "@/lib/types/database";
+import { useState } from "react";
+import type { TeamPlayer, TeamWithPlayers } from "@/lib/types/database";
 import {
   PlusIcon,
   PencilSquareIcon,
   TrashIcon,
   XMarkIcon,
-  UserPlusIcon,
   ChevronDownIcon,
   ChevronUpIcon,
 } from "@heroicons/react/24/outline";
-import { Select, SelectItem, Button, Input } from "@heroui/react";
+import { Button, Input } from "@heroui/react";
 import { useTournament } from "@/components/admin/TournamentContext";
 import { RowSkeleton } from "@/components/admin/AdminLoading";
+import { useTeams } from "@/hooks/admin/useTeams";
 
 export default function TeamsPage() {
   const { selectedId: selectedTournamentId } = useTournament();
-  const [teams, setTeams] = useState<TeamWithPlayers[]>([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    teams,
+    loading,
+    showForm,
+    setShowForm,
+    editingId,
+    form,
+    setForm,
+    saving,
+    openCreate,
+    openEdit,
+    handleSave: handleSaveTeam,
+    handleDelete: handleDeleteTeam,
+    reload: loadTeams,
+  } = useTeams(selectedTournamentId ?? "");
   const [expandedTeam, setExpandedTeam] = useState<string | null>(null);
-
-  // Team form
-  const [showTeamForm, setShowTeamForm] = useState(false);
-  const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
-  const [teamForm, setTeamForm] = useState({
-    name: "",
-    seed: "",
-    color: "",
-    coach_name: "",
-  });
-  const [saving, setSaving] = useState(false);
-
-  const loadTeams = useCallback(async () => {
-    if (!selectedTournamentId) return;
-    setLoading(true);
-    const res = await fetch(
-      `/api/admin/teams?tournament_id=${selectedTournamentId}&include_players=true`,
-    );
-    const data = await res.json();
-    setTeams(Array.isArray(data) ? data : []);
-    setLoading(false);
-  }, [selectedTournamentId]);
-
-  useEffect(() => {
-    loadTeams();
-  }, [loadTeams]);
-
-  function openCreateTeam() {
-    setEditingTeamId(null);
-    setTeamForm({ name: "", seed: "", color: "", coach_name: "" });
-    setShowTeamForm(true);
-  }
-
-  function openEditTeam(t: TeamWithPlayers) {
-    setEditingTeamId(t.id);
-    setTeamForm({
-      name: t.name,
-      seed: t.seed?.toString() ?? "",
-      color: t.color ?? "",
-      coach_name: t.coach_name ?? "",
-    });
-    setShowTeamForm(true);
-  }
-
-  async function handleSaveTeam(e: React.FormEvent) {
-    e.preventDefault();
-    setSaving(true);
-    const payload = {
-      tournament_id: selectedTournamentId,
-      name: teamForm.name,
-      seed: teamForm.seed ? parseInt(teamForm.seed) : null,
-      color: teamForm.color || null,
-      coach_name: teamForm.coach_name || null,
-    };
-    if (editingTeamId) {
-      await fetch("/api/admin/teams", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: editingTeamId, ...payload }),
-      });
-    } else {
-      await fetch("/api/admin/teams", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-    }
-    setSaving(false);
-    setShowTeamForm(false);
-    loadTeams();
-  }
-
-  async function handleDeleteTeam(id: string) {
-    if (!confirm("Delete this team and all roster assignments?")) return;
-    await fetch(`/api/admin/teams?id=${id}`, { method: "DELETE" });
-    loadTeams();
-  }
 
   async function toggleCaptain(tp: TeamPlayer) {
     await fetch("/api/admin/team-players", {
@@ -123,7 +59,7 @@ export default function TeamsPage() {
           </p>
         </div>
         <Button
-          onPress={openCreateTeam}
+          onPress={openCreate}
           color="primary"
           className="shrink-0"
           startContent={<PlusIcon className="w-4 h-4" />}
@@ -191,7 +127,7 @@ export default function TeamsPage() {
                       isIconOnly
                       variant="light"
                       size="sm"
-                      onPress={() => openEditTeam(team)}
+                      onPress={() => openEdit(team)}
                       title="Edit team"
                     >
                       <PencilSquareIcon className="w-4 h-4" />
@@ -277,21 +213,21 @@ export default function TeamsPage() {
       )}
 
       {/* Team form modal */}
-      {showTeamForm && (
+      {showForm && (
         <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4">
           <div
             className="fixed inset-0 bg-black/60"
-            onClick={() => setShowTeamForm(false)}
+            onClick={() => setShowForm(false)}
           />
           <div className="relative bg-brand-surface border border-white/10 rounded-2xl w-full max-w-md p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold text-white">
-                {editingTeamId ? "Edit Team" : "New Team"}
+                {editingId ? "Edit Team" : "New Team"}
               </h2>
               <Button
                 isIconOnly
                 variant="light"
-                onPress={() => setShowTeamForm(false)}
+                onPress={() => setShowForm(false)}
               >
                 <XMarkIcon className="w-5 h-5" />
               </Button>
@@ -302,8 +238,8 @@ export default function TeamsPage() {
                 isRequired
                 label="Team Name"
                 variant="bordered"
-                value={teamForm.name}
-                onValueChange={(v) => setTeamForm({ ...teamForm, name: v })}
+                value={form.name}
+                onValueChange={(v) => setForm({ ...form, name: v })}
                 placeholder="Team Alpha"
               />
               <div className="grid grid-cols-2 gap-4">
@@ -311,42 +247,33 @@ export default function TeamsPage() {
                   type="number"
                   label="Seed"
                   variant="bordered"
-                  value={teamForm.seed}
-                  onValueChange={(v) => setTeamForm({ ...teamForm, seed: v })}
+                  value={form.seed}
+                  onValueChange={(v) => setForm({ ...form, seed: v })}
                   placeholder="1"
                 />
                 <Input
                   type="color"
                   label="Color"
                   variant="bordered"
-                  value={teamForm.color || "#0ED3CF"}
-                  onValueChange={(v) => setTeamForm({ ...teamForm, color: v })}
+                  value={form.color || "#0ED3CF"}
+                  onValueChange={(v) => setForm({ ...form, color: v })}
                   classNames={{ label: "mb-2" }}
                 />
               </div>
               <Input
                 label="Coach Name"
                 variant="bordered"
-                value={teamForm.coach_name}
-                onValueChange={(v) =>
-                  setTeamForm({ ...teamForm, coach_name: v })
-                }
+                value={form.coach_name}
+                onValueChange={(v) => setForm({ ...form, coach_name: v })}
                 placeholder="Optional"
               />
 
               <div className="flex justify-end gap-3 pt-2">
-                <Button
-                  variant="bordered"
-                  onPress={() => setShowTeamForm(false)}
-                >
+                <Button variant="bordered" onPress={() => setShowForm(false)}>
                   Cancel
                 </Button>
                 <Button type="submit" color="primary" isLoading={saving}>
-                  {saving
-                    ? "Saving…"
-                    : editingTeamId
-                      ? "Update"
-                      : "Create Team"}
+                  {saving ? "Saving…" : editingId ? "Update" : "Create Team"}
                 </Button>
               </div>
             </form>

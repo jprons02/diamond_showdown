@@ -14,23 +14,10 @@ import {
 import { Select, SelectItem, Input } from "@heroui/react";
 import { useTournament } from "@/components/admin/TournamentContext";
 import { TableSkeleton } from "@/components/admin/AdminLoading";
-
-const REG_STATUS_COLORS: Record<RegistrationStatus, string> = {
-  pending: "bg-amber-400/10 text-amber-400",
-  confirmed: "bg-emerald-400/10 text-emerald-400",
-  waitlisted: "bg-purple-400/10 text-purple-400",
-  cancelled: "bg-red-400/10 text-red-400",
-  refunded: "bg-gray-500/10 text-gray-400",
-  checked_in: "bg-brand-teal/10 text-brand-teal",
-  no_show: "bg-red-400/10 text-red-400",
-};
-
-const PAY_STATUS_COLORS: Record<PaymentStatus, string> = {
-  unpaid: "bg-red-400/10 text-red-400",
-  pending: "bg-amber-400/10 text-amber-400",
-  paid: "bg-emerald-400/10 text-emerald-400",
-  refunded: "bg-gray-500/10 text-gray-400",
-};
+import {
+  REG_STATUS_COLORS,
+  PAY_STATUS_COLORS,
+} from "@/lib/constants/statusColors";
 
 export default function RegistrationsPage() {
   const { selectedId: selectedTournamentId } = useTournament();

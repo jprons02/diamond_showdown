@@ -35,26 +35,11 @@ import {
   Input,
 } from "@heroui/react";
 import { DatePicker } from "@heroui/date-picker";
-import { parseDateTime, type CalendarDateTime } from "@internationalized/date";
+import { type CalendarDateTime } from "@internationalized/date";
 import { useTournament } from "@/components/admin/TournamentContext";
 import { RowSkeleton, SaveSpinner } from "@/components/admin/AdminLoading";
-
-function toCalendarDateTime(str: string): CalendarDateTime | null {
-  if (!str) return null;
-  try {
-    return parseDateTime(str.length === 16 ? str + ":00" : str);
-  } catch {
-    return null;
-  }
-}
-
-const GAME_STATUS_COLORS: Record<GameStatus, string> = {
-  scheduled: "bg-white/5 text-gray-400",
-  in_progress: "bg-amber-400/10 text-amber-400",
-  final: "bg-emerald-400/10 text-emerald-400",
-  cancelled: "bg-red-400/10 text-red-400",
-  forfeit: "bg-red-400/10 text-red-400",
-};
+import { toCalendarDateTime } from "@/lib/utils/dateTime";
+import { GAME_STATUS_COLORS } from "@/lib/constants/statusColors";
 
 export default function GamesPage() {
   const {

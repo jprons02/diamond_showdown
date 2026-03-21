@@ -1,10 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import type {
-  RegistrationWithPlayer,
-  CheckInStatus,
-} from "@/lib/types/database";
+import type { CheckInStatus } from "@/lib/types/database";
 import {
   MagnifyingGlassIcon,
   CheckCircleIcon,
@@ -13,72 +9,22 @@ import {
 } from "@heroicons/react/24/outline";
 import { Input, Button } from "@heroui/react";
 import { useTournament } from "@/components/admin/TournamentContext";
-import { RowSkeleton, SaveSpinner } from "@/components/admin/AdminLoading";
-
-const CHECK_IN_COLORS: Record<string, string> = {
-  checked_in: "bg-emerald-400/10 text-emerald-400 border-emerald-400/20",
-  not_arrived: "bg-white/5 text-gray-400 border-white/5",
-  no_show: "bg-red-400/10 text-red-400 border-red-400/20",
-};
+import { RowSkeleton } from "@/components/admin/AdminLoading";
+import { useCheckIn } from "@/hooks/admin/useCheckIn";
+import { CHECK_IN_COLORS } from "@/lib/constants/statusColors";
 
 export default function CheckInPage() {
   const { selectedId: selectedTournamentId } = useTournament();
-  const [registrations, setRegistrations] = useState<RegistrationWithPlayer[]>(
-    [],
-  );
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-  const [actionRegId, setActionRegId] = useState<string | null>(null);
-
-  const loadRegistrations = useCallback(async () => {
-    if (!selectedTournamentId) return;
-    setLoading(true);
-    const res = await fetch(
-      `/api/admin/registrations?tournament_id=${selectedTournamentId}`,
-    );
-    const data = await res.json();
-    const all: RegistrationWithPlayer[] = Array.isArray(data) ? data : [];
-    setRegistrations(
-      all.filter((r) =>
-        ["confirmed", "checked_in", "no_show"].includes(r.registration_status),
-      ),
-    );
-    setLoading(false);
-  }, [selectedTournamentId]);
-
-  useEffect(() => {
-    loadRegistrations();
-  }, [loadRegistrations]);
-
-  async function setCheckIn(regId: string, status: CheckInStatus) {
-    setActionRegId(regId);
-    const updates: Record<string, unknown> = { check_in_status: status };
-    if (status === "checked_in") {
-      updates.registration_status = "checked_in";
-    } else if (status === "no_show") {
-      updates.registration_status = "no_show";
-    }
-    await fetch("/api/admin/registrations", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: regId, ...updates }),
-    });
-    setActionRegId(null);
-    loadRegistrations();
-  }
-
-  const filtered = registrations.filter((r) => {
-    if (!search) return true;
-    const player = r.player;
-    return `${player?.first_name} ${player?.last_name} ${player?.email}`
-      .toLowerCase()
-      .includes(search.toLowerCase());
-  });
-
-  const checkedInCount = registrations.filter(
-    (r) => r.check_in_status === "checked_in",
-  ).length;
-  const totalConfirmed = registrations.length;
+  const {
+    filtered,
+    loading,
+    search,
+    setSearch,
+    actionId,
+    setCheckIn,
+    checkedInCount,
+    totalConfirmed,
+  } = useCheckIn(selectedTournamentId ?? "");
 
   return (
     <div className="space-y-6">
@@ -152,7 +98,7 @@ export default function CheckInPage() {
                       size="sm"
                       color="success"
                       variant="flat"
-                      isLoading={actionRegId === reg.id}
+                      isLoading={actionId === reg.id}
                       onPress={() => setCheckIn(reg.id, "checked_in")}
                     >
                       Check In
@@ -162,7 +108,7 @@ export default function CheckInPage() {
                     <Button
                       size="sm"
                       variant="light"
-                      isLoading={actionRegId === reg.id}
+                      isLoading={actionId === reg.id}
                       onPress={() => setCheckIn(reg.id, "not_arrived")}
                     >
                       Undo
@@ -173,7 +119,7 @@ export default function CheckInPage() {
                       size="sm"
                       variant="light"
                       color="danger"
-                      isLoading={actionRegId === reg.id}
+                      isLoading={actionId === reg.id}
                       onPress={() => setCheckIn(reg.id, "no_show")}
                     >
                       No Show

@@ -25,7 +25,7 @@ import {
   ScoresDialog,
   GenerateBracketDialog,
   PublishBracketDialog,
-} from "@/components/admin/WizardStepDialogs";
+} from "@/components/admin/dialogs";
 
 const phaseColors: Record<
   string,
