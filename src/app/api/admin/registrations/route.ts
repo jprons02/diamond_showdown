@@ -21,10 +21,45 @@ export async function GET(req: NextRequest) {
   return NextResponse.json(data);
 }
 
-/** PATCH /api/admin/registrations — update a registration */
+/** PATCH /api/admin/registrations — update one or many registrations
+ *  Single:  { id, ...fields }
+ *  Batch:   { batch: [{ id, ...fields }, ...] }
+ */
 export async function PATCH(req: NextRequest) {
   const supabase = createServiceClient();
   const body = await req.json();
+
+  // --- batch mode ---
+  if (Array.isArray(body.batch)) {
+    const ALLOWED_FIELDS = [
+      "registration_status",
+      "payment_status",
+      "paid_amount",
+      "draft_eligible",
+      "check_in_status",
+    ];
+    const results = await Promise.all(
+      body.batch.map(async (item: Record<string, unknown>) => {
+        const { id, ...raw } = item;
+        if (!id) return { id, error: "id is required" };
+        const updates: Record<string, unknown> = {};
+        for (const key of ALLOWED_FIELDS) {
+          if (key in raw) updates[key] = raw[key];
+        }
+        const { error } = await supabase
+          .from("registrations")
+          .update(updates)
+          .eq("id", id as string);
+        return { id, error: error?.message ?? null };
+      }),
+    );
+    const failed = results.filter((r) => r.error);
+    if (failed.length)
+      return NextResponse.json({ errors: failed }, { status: 207 });
+    return NextResponse.json({ ok: true });
+  }
+
+  // --- single mode (unchanged) ---
   const { id, ...updates } = body;
 
   if (!id)

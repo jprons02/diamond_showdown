@@ -23,42 +23,62 @@ export function RegistrationsDialog({
     registrations,
     filtered,
     loading,
+    saving,
     search,
     setSearch,
     paidCount,
     eligibleCount,
-    updateField: baseUpdate,
+    dirtyCount,
+    isDirty,
+    updateField,
+    saveAll,
   } = useRegistrations(tournamentId);
 
-  async function updateField(
-    id: string,
-    field: string,
-    value: string | boolean,
-  ) {
-    await baseUpdate(id, field, value);
-    onDataChange();
+  async function handleClose() {
+    if (dirtyCount > 0) {
+      const ok = await saveAll();
+      if (ok) onDataChange();
+    }
+    onClose();
+  }
+
+  async function handleSave() {
+    const ok = await saveAll();
+    if (ok) onDataChange();
   }
 
   return (
     <DialogShell
       title="Manage Registrations"
-      onClose={onClose}
+      onClose={handleClose}
       fullPageHref="/admin/registrations"
       wide
     >
       <div className="space-y-4">
-        <div className="flex items-center gap-4 text-xs text-gray-400">
-          <span>
-            <strong className="text-white">{registrations.length}</strong>{" "}
-            registered
-          </span>
-          <span>
-            <strong className="text-emerald-400">{paidCount}</strong> paid
-          </span>
-          <span>
-            <strong className="text-brand-teal">{eligibleCount}</strong>{" "}
-            draft-eligible
-          </span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4 text-xs text-gray-400">
+            <span>
+              <strong className="text-white">{registrations.length}</strong>{" "}
+              registered
+            </span>
+            <span>
+              <strong className="text-emerald-400">{paidCount}</strong> paid
+            </span>
+            <span>
+              <strong className="text-brand-teal">{eligibleCount}</strong>{" "}
+              draft-eligible
+            </span>
+          </div>
+          {dirtyCount > 0 && (
+            <Button
+              size="sm"
+              color="primary"
+              isLoading={saving}
+              onPress={handleSave}
+            >
+              Save {dirtyCount} change{dirtyCount !== 1 ? "s" : ""}
+            </Button>
+          )}
         </div>
 
         <Input
@@ -80,10 +100,11 @@ export function RegistrationsDialog({
           <div className="space-y-2 max-h-[50vh] overflow-y-auto">
             {filtered.map((reg) => {
               const player = reg.player;
+              const dirty = isDirty(reg.id);
               return (
                 <div
                   key={reg.id}
-                  className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5 gap-3"
+                  className={`flex items-center justify-between p-3 rounded-xl border gap-3 ${dirty ? "bg-white/[0.04] border-brand-teal/30" : "bg-white/[0.02] border-white/5"}`}
                 >
                   <div className="min-w-0 flex-1">
                     <p className="text-sm text-white font-medium truncate">

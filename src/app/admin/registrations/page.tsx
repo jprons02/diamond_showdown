@@ -1,89 +1,46 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import type {
-  RegistrationWithJoins,
-  RegistrationStatus,
-  PaymentStatus,
-} from "@/lib/types/database";
+import { useState } from "react";
+import type { RegistrationStatus, PaymentStatus } from "@/lib/types/database";
 import {
   MagnifyingGlassIcon,
   CheckCircleIcon,
   XCircleIcon,
 } from "@heroicons/react/24/outline";
-import { Select, SelectItem, Input } from "@heroui/react";
+import { Select, SelectItem, Input, Button } from "@heroui/react";
 import { useTournament } from "@/components/admin/TournamentContext";
 import { TableSkeleton } from "@/components/admin/AdminLoading";
 import {
   REG_STATUS_COLORS,
   PAY_STATUS_COLORS,
 } from "@/lib/constants/statusColors";
+import { useRegistrations } from "@/hooks/admin/useRegistrations";
 
 export default function RegistrationsPage() {
   const { selectedId: selectedTournamentId } = useTournament();
-  const [registrations, setRegistrations] = useState<RegistrationWithJoins[]>(
-    [],
-  );
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
-  const loadRegistrations = useCallback(async () => {
-    if (!selectedTournamentId) return;
-    setLoading(true);
-    const res = await fetch(
-      `/api/admin/registrations?tournament_id=${selectedTournamentId}`,
-    );
-    const data = await res.json();
-    setRegistrations(Array.isArray(data) ? data : []);
-    setLoading(false);
-  }, [selectedTournamentId]);
+  const {
+    registrations,
+    filtered: searchFiltered,
+    loading,
+    saving,
+    search,
+    setSearch,
+    paidCount,
+    waiverCount,
+    dirtyCount,
+    isDirty,
+    updateField,
+    updateRegistrationStatus,
+    updatePaymentStatus,
+    saveAll,
+  } = useRegistrations(selectedTournamentId);
 
-  useEffect(() => {
-    loadRegistrations();
-  }, [loadRegistrations]);
-
-  async function updateRegistrationStatus(
-    id: string,
-    registration_status: RegistrationStatus,
-  ) {
-    await fetch("/api/admin/registrations", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, registration_status }),
-    });
-    loadRegistrations();
-  }
-
-  async function updatePaymentStatus(
-    id: string,
-    payment_status: PaymentStatus,
-  ) {
-    await fetch("/api/admin/registrations", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, payment_status }),
-    });
-    loadRegistrations();
-  }
-
-  // Filter registrations
-  const filtered = registrations.filter((r) => {
-    const player = r.player;
-    const matchesSearch =
-      !search ||
-      `${player?.first_name} ${player?.last_name} ${player?.email}`
-        .toLowerCase()
-        .includes(search.toLowerCase());
-    const matchesStatus =
-      statusFilter === "all" || r.registration_status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
-
-  const paidCount = registrations.filter(
-    (r) => r.payment_status === "paid",
-  ).length;
-  const waiverCount = registrations.filter((r) => r.waiver?.accepted).length;
+  // Apply the status filter on top of the search filter from the hook
+  const filtered = searchFiltered.filter((r) =>
+    statusFilter === "all" ? true : r.registration_status === statusFilter,
+  );
 
   return (
     <div className="space-y-6">
@@ -108,6 +65,16 @@ export default function RegistrationsPage() {
             <strong className="text-brand-teal">{waiverCount}</strong> waivers
           </span>
         </div>
+        {dirtyCount > 0 && (
+          <Button
+            size="sm"
+            color="primary"
+            isLoading={saving}
+            onPress={saveAll}
+          >
+            Save {dirtyCount} change{dirtyCount !== 1 ? "s" : ""}
+          </Button>
+        )}
       </div>
 
       {/* Search + Filter */}
@@ -181,7 +148,7 @@ export default function RegistrationsPage() {
                   return (
                     <tr
                       key={reg.id}
-                      className="hover:bg-white/[0.02] transition-colors"
+                      className={`transition-colors ${isDirty(reg.id) ? "bg-white/[0.04]" : "hover:bg-white/[0.02]"}`}
                     >
                       <td className="px-5 py-3">
                         <p className="text-white font-medium">
@@ -198,6 +165,7 @@ export default function RegistrationsPage() {
                               e.target.value as RegistrationStatus,
                             )
                           }
+                          onClick={(e) => e.stopPropagation()}
                           className={`text-xs font-medium px-2.5 py-1 rounded-full border-0 cursor-pointer ${REG_STATUS_COLORS[reg.registration_status]}`}
                         >
                           <option value="pending">Pending</option>
@@ -218,6 +186,7 @@ export default function RegistrationsPage() {
                               e.target.value as PaymentStatus,
                             )
                           }
+                          onClick={(e) => e.stopPropagation()}
                           className={`text-xs font-medium px-2.5 py-1 rounded-full border-0 cursor-pointer ${PAY_STATUS_COLORS[reg.payment_status]}`}
                         >
                           <option value="unpaid">Unpaid</option>
