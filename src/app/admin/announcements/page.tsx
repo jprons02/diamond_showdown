@@ -29,7 +29,10 @@ export default function AnnouncementsPage() {
   const [saving, setSaving] = useState(false);
 
   const loadAnnouncements = useCallback(async () => {
-    if (!selectedTournamentId) return;
+    if (!selectedTournamentId) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     const res = await fetch(
       `/api/admin/announcements?tournament_id=${selectedTournamentId}`,
@@ -120,7 +123,13 @@ export default function AnnouncementsPage() {
         </Button>
       </div>
 
-      {loading ? (
+      {!selectedTournamentId ? (
+        <div className="rounded-2xl bg-brand-surface border border-white/5 p-12 text-center">
+          <p className="text-gray-400">
+            Select a tournament to view announcements
+          </p>
+        </div>
+      ) : loading ? (
         <RowSkeleton count={3} height="h-24" />
       ) : announcements.length === 0 ? (
         <div className="rounded-2xl bg-brand-surface border border-white/5 p-12 text-center">

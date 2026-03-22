@@ -13,7 +13,10 @@ export function useCheckIn(tournamentId: string | null) {
   const [actionId, setActionId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    if (!tournamentId) return;
+    if (!tournamentId) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     const res = await fetch(
       `/api/admin/registrations?tournament_id=${tournamentId}`,

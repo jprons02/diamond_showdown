@@ -20,6 +20,8 @@ export function TournamentSelector({
     <Select
       aria-label="Select tournament"
       variant="bordered"
+      selectionMode="single"
+      disallowEmptySelection
       className={className}
       selectedKeys={selectedId ? [selectedId] : []}
       onSelectionChange={(keys) => onChange(Array.from(keys)[0] as string)}

@@ -81,7 +81,10 @@ export default function GamesPage() {
   const [gameSaving, setGameSaving] = useState(false);
 
   const loadGames = useCallback(async () => {
-    if (!selectedTournamentId) return;
+    if (!selectedTournamentId) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
 
     const [gamesData, teamsData, fieldsData] = await Promise.all([
@@ -504,7 +507,11 @@ export default function GamesPage() {
       </div>
 
       {/* Games list */}
-      {loading ? (
+      {!selectedTournamentId ? (
+        <div className="rounded-2xl bg-brand-surface border border-white/5 p-12 text-center">
+          <p className="text-gray-400">Select a tournament to view games</p>
+        </div>
+      ) : loading ? (
         <RowSkeleton count={4} height="h-24" />
       ) : filtered.length === 0 ? (
         <div className="rounded-2xl bg-brand-surface border border-white/5 p-12 text-center">

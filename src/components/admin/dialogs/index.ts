@@ -8,3 +8,4 @@ export { CheckInDialog } from "./CheckInDialog";
 export { ScoresDialog } from "./ScoresDialog";
 export { GenerateBracketDialog } from "./GenerateBracketDialog";
 export { PublishBracketDialog } from "./PublishBracketDialog";
+export { TournamentFormDialog } from "./TournamentFormDialog";

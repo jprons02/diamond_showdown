@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import Link from "next/link";
 import type { WizardStep } from "@/app/api/admin/wizard/route";
 import { useTournament } from "@/components/admin/TournamentContext";
 import { RowSkeleton } from "@/components/admin/AdminLoading";
@@ -10,6 +9,7 @@ import {
   ArrowRightIcon,
   ExclamationTriangleIcon,
 } from "@heroicons/react/24/solid";
+import { PlusIcon } from "@heroicons/react/24/outline";
 import {
   EllipsisHorizontalCircleIcon,
   MinusCircleIcon,
@@ -25,6 +25,7 @@ import {
   ScoresDialog,
   GenerateBracketDialog,
   PublishBracketDialog,
+  TournamentFormDialog,
 } from "@/components/admin/dialogs";
 
 const phaseColors: Record<
@@ -92,6 +93,7 @@ export default function WizardPage() {
   const [steps, setSteps] = useState<WizardStep[]>([]);
   const [stepsLoading, setStepsLoading] = useState(false);
   const [openDialog, setOpenDialog] = useState<string | null>(null);
+  const [showCreateTournament, setShowCreateTournament] = useState(false);
 
   // Load wizard steps when tournament changes
   const loadSteps = useCallback(async () => {
@@ -179,14 +181,22 @@ export default function WizardPage() {
           <p className="text-gray-500 text-sm mt-1 mb-4">
             Create your first tournament to get started.
           </p>
-          <Link
-            href="/admin/tournaments"
+          <button
+            type="button"
+            onClick={() => setShowCreateTournament(true)}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-teal/10 text-brand-teal text-sm font-medium hover:bg-brand-teal/20 transition-colors"
           >
-            Go to Tournaments
-            <ArrowRightIcon className="w-4 h-4" />
-          </Link>
+            <PlusIcon className="w-4 h-4" />
+            New Tournament
+          </button>
         </div>
+
+        {showCreateTournament && (
+          <TournamentFormDialog
+            onClose={() => setShowCreateTournament(false)}
+            onSaved={refreshTournaments}
+          />
+        )}
       </div>
     );
   }

@@ -110,19 +110,6 @@ export async function GET(req: NextRequest) {
       details: `"${tournament.name}" created`,
     },
     {
-      id: "create-fields",
-      phase: "Setup",
-      title: "Create Fields",
-      description:
-        "Add the physical fields/diamonds where games will be played.",
-      status: stepStatus(fieldCount > 0),
-      href: "/admin/fields",
-      details:
-        fieldCount > 0
-          ? `${fieldCount} field${fieldCount !== 1 ? "s" : ""} created`
-          : null,
-    },
-    {
       id: "open-registration",
       phase: "Setup",
       title: "Open Registration",
@@ -194,6 +181,19 @@ export async function GET(req: NextRequest) {
           : draftEligible > 0
             ? `${draftEligible} player${draftEligible !== 1 ? "s" : ""} eligible for draft`
             : null,
+    },
+    {
+      id: "create-fields",
+      phase: "Scheduling",
+      title: "Create Fields",
+      description:
+        "Add the physical fields/diamonds where games will be played.",
+      status: stepStatus(fieldCount > 0),
+      href: "/admin/fields",
+      details:
+        fieldCount > 0
+          ? `${fieldCount} field${fieldCount !== 1 ? "s" : ""} created`
+          : null,
     },
     {
       id: "schedule-pool-games",

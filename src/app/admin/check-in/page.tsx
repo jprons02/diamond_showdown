@@ -59,7 +59,13 @@ export default function CheckInPage() {
       />
 
       {/* Check-in list */}
-      {loading ? (
+      {!selectedTournamentId ? (
+        <div className="rounded-2xl bg-brand-surface border border-white/5 p-12 text-center">
+          <p className="text-gray-400">
+            Select a tournament to manage check-in
+          </p>
+        </div>
+      ) : loading ? (
         <RowSkeleton count={6} height="h-16" />
       ) : filtered.length === 0 ? (
         <div className="rounded-2xl bg-brand-surface border border-white/5 p-12 text-center">
